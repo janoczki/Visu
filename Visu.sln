@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visu", "Visu\Visu.csproj", "{01FF363A-60A3-436F-A217-18AB13AEC6FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visu image editor", "Visu image editor\Visu image editor.csproj", "{81D7F75B-B484-4C07-BF65-F8A175C2D17B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visu chart editor", "Visu chart editor\Visu chart editor.csproj", "{FABD621E-9EC5-4ADB-9714-ADCAD13CCCCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visu datapoint editor", "Visu datapoint editor\Visu datapoint editor.csproj", "{5F106287-7BEC-486B-8BC8-B6F38FE7C718}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{01FF363A-60A3-436F-A217-18AB13AEC6FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01FF363A-60A3-436F-A217-18AB13AEC6FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01FF363A-60A3-436F-A217-18AB13AEC6FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01FF363A-60A3-436F-A217-18AB13AEC6FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81D7F75B-B484-4C07-BF65-F8A175C2D17B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81D7F75B-B484-4C07-BF65-F8A175C2D17B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81D7F75B-B484-4C07-BF65-F8A175C2D17B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81D7F75B-B484-4C07-BF65-F8A175C2D17B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FABD621E-9EC5-4ADB-9714-ADCAD13CCCCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FABD621E-9EC5-4ADB-9714-ADCAD13CCCCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FABD621E-9EC5-4ADB-9714-ADCAD13CCCCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FABD621E-9EC5-4ADB-9714-ADCAD13CCCCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F106287-7BEC-486B-8BC8-B6F38FE7C718}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F106287-7BEC-486B-8BC8-B6F38FE7C718}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F106287-7BEC-486B-8BC8-B6F38FE7C718}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F106287-7BEC-486B-8BC8-B6F38FE7C718}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
