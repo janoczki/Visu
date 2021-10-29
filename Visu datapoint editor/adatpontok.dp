@@ -1,5 +1,5 @@
-1;ADAT01;Adatpont 1;int;yes;no;10.1.2.3;1;AI;1
-2;ADAT02;Adatpont 2;uint;no;yes;192.1.3.6;2;AV;2
-3;ADAT03;Adatpont 3;float;yes;no;45.34.23.12;3;BO;3
-4;ADAT04;Adatpont 4;binary;no;yes;56.76.34.23;4;BV;4
-5;ADAT05;Adatpont 5;string;yes;no;1.2.3.4;5;MV;5
+1;ADAT01;Adatpont 1;int;true;false;10.1.2.3;1;AI;1
+2;ADAT02;Adatpont 2;uint;false;true;192.1.3.6;2;AV;2
+3;ADAT03;Adatpont 3;float;true;false;45.34.23.12;3;BO;3
+4;ADAT04;Adatpont 4;binary;false;true;56.76.34.23;4;BV;4
+5;ADAT05;Adatpont 5;string;true;false;1.2.3.4;5;MV;5
