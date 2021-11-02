@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visu chart editor", "Visu c
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visu datapoint editor", "Visu datapoint editor\Visu datapoint editor.csproj", "{5F106287-7BEC-486B-8BC8-B6F38FE7C718}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visu dataviewer", "Visu dataviewer\Visu dataviewer.csproj", "{2A63B038-1C22-453F-8DA9-03076C962236}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{5F106287-7BEC-486B-8BC8-B6F38FE7C718}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F106287-7BEC-486B-8BC8-B6F38FE7C718}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F106287-7BEC-486B-8BC8-B6F38FE7C718}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A63B038-1C22-453F-8DA9-03076C962236}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A63B038-1C22-453F-8DA9-03076C962236}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A63B038-1C22-453F-8DA9-03076C962236}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A63B038-1C22-453F-8DA9-03076C962236}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

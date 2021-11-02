@@ -1,6 +1,6 @@
-﻿namespace Visu_chart_editor
+﻿namespace Visu
 {
-    partial class Form1
+    partial class Visu
     {
         /// <summary>
         /// Required designer variable.
@@ -30,13 +30,13 @@
         {
             this.SuspendLayout();
             // 
-            // Form1
+            // Visu
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(292, 273);
-            this.Name = "Form1";
-            this.Text = "Chart editor";
+            this.Name = "Visu";
+            this.Text = "Visu";
             this.ResumeLayout(false);
 
         }

@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace Visu
 {
-    public partial class Form1 : Form
+    public partial class Visu : Form
     {
-        public Form1()
+        public Visu()
         {
             InitializeComponent();
         }

@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace Visu_chart_editor
 {
-    public partial class Form1 : Form
+    public partial class Editor : Form
     {
-        public Form1()
+        public Editor()
         {
             InitializeComponent();
         }

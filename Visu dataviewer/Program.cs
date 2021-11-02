@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Visu_chart_editor
+namespace Visu_dataviewer
 {
     static class Program
     {
@@ -16,7 +16,7 @@ namespace Visu_chart_editor
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Editor());
+            Application.Run(new DataViewer());
         }
     }
 }

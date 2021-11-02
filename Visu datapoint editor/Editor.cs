@@ -188,8 +188,6 @@ namespace Visu_datapoint_editor
 
         private void dataGridView1_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
-            //var dg = sender as DataGridView;
-            //dataGridView1[dg.RowsAdded]
             dataGridView1[0, dataGridView1.Rows.Count-1].Value = _global.maxID + 1;
             _global.maxID++;
         }
