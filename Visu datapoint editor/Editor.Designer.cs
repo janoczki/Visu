@@ -54,6 +54,7 @@
             this.dataGridView1.TabIndex = 0;
             this.dataGridView1.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellDoubleClick);
             this.dataGridView1.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView1_CellMouseClick);
+            this.dataGridView1.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.dataGridView1_RowsAdded);
             // 
             // menuStrip1
             // 
@@ -82,12 +83,13 @@
             this.újToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
             this.újToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.újToolStripMenuItem.Text = "New";
+            this.újToolStripMenuItem.Click += new System.EventHandler(this.újToolStripMenuItem_Click);
             // 
             // megnyitásToolStripMenuItem
             // 
             this.megnyitásToolStripMenuItem.Name = "megnyitásToolStripMenuItem";
             this.megnyitásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.megnyitásToolStripMenuItem.Text = "Open";
             this.megnyitásToolStripMenuItem.Click += new System.EventHandler(this.megnyitásToolStripMenuItem_Click);
             // 
@@ -95,7 +97,7 @@
             // 
             this.mentésToolStripMenuItem.Name = "mentésToolStripMenuItem";
             this.mentésToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.mentésToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.mentésToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.mentésToolStripMenuItem.Text = "Save";
             this.mentésToolStripMenuItem.Click += new System.EventHandler(this.mentésToolStripMenuItem_Click);
             // 
@@ -105,6 +107,7 @@
             this.bezárásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X)));
             this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.bezárásToolStripMenuItem.Text = "Exit";
+            this.bezárásToolStripMenuItem.Click += new System.EventHandler(this.bezárásToolStripMenuItem_Click);
             // 
             // button1
             // 
@@ -121,7 +124,7 @@
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.deleteRowToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(155, 48);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(155, 26);
             // 
             // deleteRowToolStripMenuItem
             // 
@@ -152,7 +155,7 @@
 
         #endregion
 
-        private System.Windows.Forms.DataGridView dataGridView1;
+        public System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fájlToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem újToolStripMenuItem;

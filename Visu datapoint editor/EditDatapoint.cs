@@ -36,5 +36,31 @@ namespace Visu_datapoint_editor
             comboBox2.Items.Add("MV");
             comboBox2.Items.Add("SC");
         }
+
+        private void okButton_Click(object sender, EventArgs e)
+        {
+            sendDataToEditor();
+        }
+
+        private void sendDataToEditor()
+
+        {
+            var Editor = Application.OpenForms["Editor"] as Editor;
+            var rowIndex = Editor.dataGridView1.CurrentCell.RowIndex;
+            Editor.dataGridView1[1, rowIndex].Value = textBox1.Text;
+            Editor.dataGridView1[2, rowIndex].Value = textBox2.Text;
+            Editor.dataGridView1[3, rowIndex].Value = comboBox1.Text;
+            Editor.dataGridView1[4, rowIndex].Value = checkBox1.Checked;
+            Editor.dataGridView1[5, rowIndex].Value = checkBox2.Checked;
+            Editor.dataGridView1[6, rowIndex].Value = textBox3.Text;
+            Editor.dataGridView1[7, rowIndex].Value = textBox4.Text;
+            Editor.dataGridView1[8, rowIndex].Value = comboBox2.Text;
+            Editor.dataGridView1[9, rowIndex].Value = textBox5.Text;
+        }
+
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }

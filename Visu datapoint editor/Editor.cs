@@ -35,10 +35,10 @@ namespace Visu_datapoint_editor
 
             if (directory != null)
             {
-                global.path = directory;
+                _global.path = directory;
                 try
                 {
-                    string[] file = File.ReadAllLines(global.path + "\\adatpontok.dp", Encoding.Default);
+                    string[] file = File.ReadAllLines(_global.path + "\\adatpontok.dp", Encoding.Default);
                     return file;
                 }
 
@@ -73,13 +73,11 @@ namespace Visu_datapoint_editor
             foreach (string datapoint in file)
             {
                 string[] datapointData = datapoint.Split(';');
-                //var datagridViewItem = new daata(datapointData);
                 datagrid.Rows.Add(datapointData);
             }
-            
         }
 
-        private void createDatagridViewHeader (DataGridView datagrid)
+        public void createDatagridViewHeader (DataGridView datagrid)
         {
             datagrid.ColumnCount = 10;
             dataGridView1.Columns[0].Name = "ID";
@@ -137,11 +135,10 @@ namespace Visu_datapoint_editor
 
         private void mentésToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var path = global.path + "\\adatpontok.dp";
+            var path = _global.path + "\\adatpontok.dp";
             var content = collectDataToSave();
             File.WriteAllText(path, content);
         }
-
 
         private string collectDataToSave()
         {
@@ -187,6 +184,30 @@ namespace Visu_datapoint_editor
             }
             //dataGridView1.Rows[dataGridView1.CurrentCell.RowIndex].Selected = true;
             
+        }
+
+        private void dataGridView1_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
+            //var dg = sender as DataGridView;
+            //dataGridView1[dg.RowsAdded]
+            dataGridView1[0, dataGridView1.Rows.Count-1].Value = _global.maxID + 1;
+            _global.maxID++;
+        }
+
+        private void bezárásToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void újToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var newPrj = Application.OpenForms["New"] as New;
+
+            if (newPrj == null)
+            {
+                newPrj = new New();
+            }
+            newPrj.Show();
         }
     }
 }
