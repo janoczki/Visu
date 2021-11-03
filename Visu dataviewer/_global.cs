@@ -9,5 +9,6 @@ namespace Visu_dataviewer
     public static class _global
     {
         public static string path;
+        public static List<List<string>> bgWorkerTask;
     }
 }

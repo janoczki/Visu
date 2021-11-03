@@ -53,14 +53,62 @@ namespace Visu_dataviewer
 
         private void button1_Click(object sender, EventArgs e)
         {
-            listView1.Columns.Add("Name", 100, HorizontalAlignment.Center);
-            listView1.Columns.Add("Desc", 100, HorizontalAlignment.Center);
-            listView1.Columns.Add("Dev IP", 100, HorizontalAlignment.Center);
-            listView1.Columns.Add("Dev inst", 100, HorizontalAlignment.Center);
-            listView1.Columns.Add("Obj type", 100, HorizontalAlignment.Center);
-            listView1.Columns.Add("Obj inst", 100, HorizontalAlignment.Center);
-            listView1.Columns.Add("Value", 100, HorizontalAlignment.Center);
+            timer1.Enabled = startBacnet();
+            _global.bgWorkerTask = collectDataToRead();
 
+        }
+
+        private bool startBacnet()
+        {
+            return Bac.startActivity("192.168.16.57"); 
+        }
+
+        private List<List<string>> collectDataToRead()
+        {
+            var datapoints = new List<List<string>>();
+            foreach (ListViewItem item in listView1.Items)
+            {
+                datapoints.Add(new List<string>(){
+                    item.SubItems[2].Text,
+                    item.SubItems[3].Text,
+                    item.SubItems[4].Text,
+                    item.SubItems[5].Text});
+
+                //    var doubleValue = Convert.ToDouble(readedValue);
+                //    var roundedValue = Math.Round(doubleValue, 1);
+                //    item.SubItems[6].Text = roundedValue.ToString();
+
+            }
+            return datapoints;
+        }
+
+        private List<string> readData(List<List<string>> dataToRead)
+        {
+            var dataList = new List<string>();
+            foreach (List<string> property in dataToRead)
+            {
+                var devIP = property[0];
+                var devInst = Convert.ToUInt16(property[1]);
+                var objType = property[2];
+                var objInst = Convert.ToUInt16(property[3]);
+                dataList.Add(Bac.readValue(1, devIP, devInst, objType, objInst, "PV"));
+            }
+            return dataList;
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (!backgroundWorker1.IsBusy)
+                backgroundWorker1.RunWorkerAsync();
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            e.Result = readData(_global.bgWorkerTask);
+        }
+
+        private void megnyitásToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             var file = openDatapointFile();
 
             foreach (string item in file)
@@ -77,45 +125,36 @@ namespace Visu_dataviewer
 
                 listView1.Items.Add(new ListViewItem(row));
             }
-
-            startBacnet();
-            timer1.Enabled = true;
         }
 
-        private void startBacnet()
+        private void DataViewer_Load(object sender, EventArgs e)
         {
-            Bac.startActivity("192.168.16.57");
+            listView1.Columns.Add("Name", 100, HorizontalAlignment.Center);
+            listView1.Columns.Add("Desc", 100, HorizontalAlignment.Center);
+            listView1.Columns.Add("Dev IP", 100, HorizontalAlignment.Center);
+            listView1.Columns.Add("Dev inst", 100, HorizontalAlignment.Center);
+            listView1.Columns.Add("Obj type", 100, HorizontalAlignment.Center);
+            listView1.Columns.Add("Obj inst", 100, HorizontalAlignment.Center);
+            listView1.Columns.Add("Value", 100, HorizontalAlignment.Center);
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
             
-        }
+            var result = (List<string>)e.Result;
 
-        private void readData()
-        {
-            foreach (ListViewItem item in listView1.Items)
+            foreach (string item in result)
             {
-                string devIP = item.SubItems[2].Text;
-                uint devInst = Convert.ToUInt16(item.SubItems[3].Text);
-                string objType = item.SubItems[4].Text;
-                uint objInst = Convert.ToUInt16(item.SubItems[5].Text);
-
-                var readedValue = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
-                try
-                {
-                    var doubleValue = Convert.ToDouble(readedValue);
-                    var roundedValue = Math.Round(doubleValue, 1);
-                    item.SubItems[6].Text = roundedValue.ToString();
-                }
-                catch (FormatException)
-                {
-                    item.SubItems[6].Text = "Nincs adat";
-                }
-
-                
+                var ind = result;
+                listView1.Items[result.IndexOf(item)].SubItems[6].Text = item;
             }
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            readData();
+            //MessageBox.Show("asd");
+            //foreach (ListViewItem item in listView1.Items)
+                
+            //{
+            //    item.SubItems[6].Text = roundedValue.ToString();
+            //}
+            
         }
     }
 

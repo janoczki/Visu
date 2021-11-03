@@ -12,12 +12,23 @@ namespace Visu_dataviewer
     {
         public static BacnetClient bacnet_client;
 
-        public static void startActivity(string localEndpoint)
+        public static bool startActivity(string localEndpoint)
         {
-            //bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
-            bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
+            try
+            {
+                bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
+                bacnet_client.Start();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+
             
-            bacnet_client.Start();
+            
         }
 
         public static BacnetPropertyIds getPropertyId(string prop)
