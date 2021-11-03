@@ -37,6 +37,7 @@
             this.megnyitásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bezárásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listView1 = new Visu_dataviewer.ListViewNF();
+            this.timer2 = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -56,6 +57,7 @@
             // 
             // backgroundWorker1
             // 
+            this.backgroundWorker1.WorkerReportsProgress = true;
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
             this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
@@ -103,6 +105,11 @@
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             // 
+            // timer2
+            // 
+            this.timer2.Interval = 1000;
+            this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
+            // 
             // DataViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -133,6 +140,7 @@
         private System.Windows.Forms.ToolStripMenuItem fájlToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem megnyitásToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem bezárásToolStripMenuItem;
+        private System.Windows.Forms.Timer timer2;
     }
 }
 

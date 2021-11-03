@@ -151,7 +151,7 @@ namespace Visu_datapoint_editor
                     {
                         collection = collection + row.Cells[i].Value + ";";
                     }
-                    collection = collection + row.Cells[9].Value + "\n";
+                    collection = collection + row.Cells[9].Value + System.Environment.NewLine;
                 }
             }
             return collection;
