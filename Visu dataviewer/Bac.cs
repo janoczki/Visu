@@ -17,7 +17,7 @@ namespace Visu_dataviewer
             try
             {
                 bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
-                //bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);       
+                bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);       
                 bacnet_client.Start();
                 return true;
             }
@@ -26,10 +26,6 @@ namespace Visu_dataviewer
                 MessageBox.Show(ex.Message);
                 return false;
             }
-
-
-            
-            
         }
 
         public static BacnetPropertyIds getPropertyId(string prop)
@@ -162,61 +158,74 @@ namespace Visu_dataviewer
             return "";
         }
 
-        //public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress adr, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId monitoredObjectIdentifier, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
-        //{
-        //    var objInstance = monitoredObjectIdentifier.Instance;
-        //    var objType = customTypeFromBacnetObjectType(monitoredObjectIdentifier.Type);
-        //    var remainingTime = timeRemaining;
+        public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress adr, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId monitoredObjectIdentifier, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
+        {
+            //BacnetAddress asd = new BacnetAddress(BacnetAddressTypes.IP,)
+            
+            //var asdasd = adr
+            var objInstance = monitoredObjectIdentifier.Instance;
+            var objType = customTypeFromBacnetObjectType(monitoredObjectIdentifier.Type);
+            var remainingTime = timeRemaining;
 
-        //    foreach (BacnetPropertyValue value in values)
-        //    {
-        //        switch ((BacnetPropertyIds)value.property.propertyIdentifier)
-        //        {
-        //            case BacnetPropertyIds.PROP_PRESENT_VALUE:
-        //                //Event = "Értékváltozás";
-        //                var Value = value.value[0].ToString();
-        //                _global.szarok[
-        //                //WriteFile("SavedList_COV.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
-        //                //logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-        //                break;
 
-        //            //case BacnetPropertyIds.PROP_STATUS_FLAGS:
-        //            //    Event = "Állapotváltozás";
-        //            //    string status_text = "";
-        //            //    if (value.value != null && value.value.Count > 0)
-        //            //    {
-        //            //        // TODO: egyszerre kapom meg a statusflageket, így egyszerre kell visszaadnom az állapotokat
-        //            //        BacnetStatusFlags status = (BacnetStatusFlags)((BacnetBitString)value.value[0].Value).ConvertToInt();
-        //            //        if ((status & BacnetStatusFlags.STATUS_FLAG_FAULT) == BacnetStatusFlags.STATUS_FLAG_FAULT)
-        //            //            status_text = "Hibás érték";
-        //            //        else if ((status & BacnetStatusFlags.STATUS_FLAG_IN_ALARM) == BacnetStatusFlags.STATUS_FLAG_IN_ALARM)
-        //            //            status_text = "Hiba";
-        //            //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE) == BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE)
-        //            //            status_text = "Használaton kívül";
-        //            //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN) == BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN)
-        //            //            status_text = "Felülbírálva";
-        //            //        else
-        //            //            status_text = "Valami más történt:";
-        //            //    }
-        //            //    if (status_text != "")
-        //            //    {
-        //            //        Value = status_text;
+            foreach (BacnetPropertyValue value in values)
+            {
+                switch ((BacnetPropertyIds)value.property.propertyIdentifier)
+                {
+                    case BacnetPropertyIds.PROP_PRESENT_VALUE:
+                        //Event = "Értékváltozás";
+                        var Value = value.value[0].ToString();
+                        
+                        foreach(var item in _global.bigDatapointTable)
+                        {
+                            if ((item[7] == objType) & 
+                                (item[8] == objInstance.ToString()))
+                            {
+                                item[9] = Value;
+                                break;
+                            }
+                        }
+                        //WriteFile("SavedList_COV.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
+                        //logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
+                        break;
 
-        //            //        Program.events.Add(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-        //            //        logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-        //            //        //WriteFile("SavedList_Event.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
-        //            //    }
-        //            //    break;
+                    //case BacnetPropertyIds.PROP_STATUS_FLAGS:
+                    //    Event = "Állapotváltozás";
+                    //    string status_text = "";
+                    //    if (value.value != null && value.value.Count > 0)
+                    //    {
+                    //        // TODO: egyszerre kapom meg a statusflageket, így egyszerre kell visszaadnom az állapotokat
+                    //        BacnetStatusFlags status = (BacnetStatusFlags)((BacnetBitString)value.value[0].Value).ConvertToInt();
+                    //        if ((status & BacnetStatusFlags.STATUS_FLAG_FAULT) == BacnetStatusFlags.STATUS_FLAG_FAULT)
+                    //            status_text = "Hibás érték";
+                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_IN_ALARM) == BacnetStatusFlags.STATUS_FLAG_IN_ALARM)
+                    //            status_text = "Hiba";
+                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE) == BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE)
+                    //            status_text = "Használaton kívül";
+                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN) == BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN)
+                    //            status_text = "Felülbírálva";
+                    //        else
+                    //            status_text = "Valami más történt:";
+                    //    }
+                    //    if (status_text != "")
+                    //    {
+                    //        Value = status_text;
 
-        //            default:
-        //                Value = "";
-        //                break;
-        //        }
-        //    }
-        //    if (need_confirm)
-        //    {
-        //        sender.SimpleAckResponse(adr, BacnetConfirmedServices.SERVICE_CONFIRMED_COV_NOTIFICATION, invoke_id);
-        //    }
-        //}
+                    //        Program.events.Add(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
+                    //        logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
+                    //        //WriteFile("SavedList_Event.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
+                    //    }
+                    //    break;
+
+                    default:
+                        Value = "";
+                        break;
+                }
+            }
+            if (need_confirm)
+            {
+                sender.SimpleAckResponse(adr, BacnetConfirmedServices.SERVICE_CONFIRMED_COV_NOTIFICATION, invoke_id);
+            }
+        }
     }
 }

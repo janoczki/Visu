@@ -29,47 +29,49 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.button1 = new System.Windows.Forms.Button();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.onlineButton = new System.Windows.Forms.Button();
+            this.pollingTimer = new System.Windows.Forms.Timer(this.components);
+            this.pollingBackgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.menu = new System.Windows.Forms.MenuStrip();
             this.fájlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.megnyitásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bezárásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.UItimer = new System.Windows.Forms.Timer(this.components);
+            this.covSubscriptionTimer = new System.Windows.Forms.Timer(this.components);
             this.listView1 = new Visu_dataviewer.ListViewNF();
-            this.timer2 = new System.Windows.Forms.Timer(this.components);
-            this.menuStrip1.SuspendLayout();
+            this.pollingButton = new System.Windows.Forms.Button();
+            this.pollingIntervalTextbox = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.menu.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1
+            // onlineButton
             // 
-            this.button1.Location = new System.Drawing.Point(12, 272);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Read";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.onlineButton.Location = new System.Drawing.Point(12, 272);
+            this.onlineButton.Name = "onlineButton";
+            this.onlineButton.Size = new System.Drawing.Size(75, 23);
+            this.onlineButton.TabIndex = 1;
+            this.onlineButton.Text = "Online";
+            this.onlineButton.UseVisualStyleBackColor = true;
+            this.onlineButton.Click += new System.EventHandler(this.onlineButton_Click);
             // 
-            // timer1
+            // pollingTimer
             // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this.pollingTimer.Tick += new System.EventHandler(this.pollingTimer_Tick);
             // 
-            // backgroundWorker1
+            // pollingBackgroundWorker
             // 
-            this.backgroundWorker1.WorkerReportsProgress = true;
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+            this.pollingBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.pollingBackgroundworker_DoWork);
             // 
-            // menuStrip1
+            // menu
             // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fájlToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1152, 24);
-            this.menuStrip1.TabIndex = 2;
-            this.menuStrip1.Text = "menuStrip1";
+            this.menu.Location = new System.Drawing.Point(0, 0);
+            this.menu.Name = "menu";
+            this.menu.Size = new System.Drawing.Size(1152, 24);
+            this.menu.TabIndex = 2;
+            this.menu.Text = "menuStrip1";
             // 
             // fájlToolStripMenuItem
             // 
@@ -78,8 +80,8 @@
             this.bezárásToolStripMenuItem});
             this.fájlToolStripMenuItem.Name = "fájlToolStripMenuItem";
             this.fájlToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
-            this.fájlToolStripMenuItem.Size = new System.Drawing.Size(36, 20);
-            this.fájlToolStripMenuItem.Text = "Fájl";
+            this.fájlToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+            this.fájlToolStripMenuItem.Text = "File";
             // 
             // megnyitásToolStripMenuItem
             // 
@@ -87,7 +89,7 @@
             this.megnyitásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
             this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.megnyitásToolStripMenuItem.Text = "Open";
-            this.megnyitásToolStripMenuItem.Click += new System.EventHandler(this.megnyitásToolStripMenuItem_Click);
+            this.megnyitásToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
             // bezárásToolStripMenuItem
             // 
@@ -95,6 +97,16 @@
             this.bezárásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
             this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.bezárásToolStripMenuItem.Text = "Quit";
+            this.bezárásToolStripMenuItem.Click += new System.EventHandler(this.QuitToolStripMenuItem_Click);
+            // 
+            // UItimer
+            // 
+            this.UItimer.Interval = 50;
+            this.UItimer.Tick += new System.EventHandler(this.UITimer_Tick);
+            // 
+            // covSubscriptionTimer
+            // 
+            this.covSubscriptionTimer.Tick += new System.EventHandler(this.covSubscriptionTimer_Tick);
             // 
             // listView1
             // 
@@ -105,25 +117,53 @@
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             // 
-            // timer2
+            // pollingButton
             // 
-            this.timer2.Interval = 1000;
-            this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
+            this.pollingButton.Enabled = false;
+            this.pollingButton.Location = new System.Drawing.Point(12, 301);
+            this.pollingButton.Name = "pollingButton";
+            this.pollingButton.Size = new System.Drawing.Size(75, 23);
+            this.pollingButton.TabIndex = 3;
+            this.pollingButton.Text = "Start polling";
+            this.pollingButton.UseVisualStyleBackColor = true;
+            this.pollingButton.Click += new System.EventHandler(this.pollingButton_Click);
+            // 
+            // pollingIntervalTextbox
+            // 
+            this.pollingIntervalTextbox.Location = new System.Drawing.Point(93, 303);
+            this.pollingIntervalTextbox.Name = "pollingIntervalTextbox";
+            this.pollingIntervalTextbox.Size = new System.Drawing.Size(49, 20);
+            this.pollingIntervalTextbox.TabIndex = 4;
+            this.pollingIntervalTextbox.Text = "5";
+            this.pollingIntervalTextbox.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(148, 306);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(53, 13);
+            this.label1.TabIndex = 5;
+            this.label1.Text = "second(s)";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // DataViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1152, 441);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.pollingIntervalTextbox);
+            this.Controls.Add(this.pollingButton);
+            this.Controls.Add(this.onlineButton);
             this.Controls.Add(this.listView1);
-            this.Controls.Add(this.menuStrip1);
-            this.MainMenuStrip = this.menuStrip1;
+            this.Controls.Add(this.menu);
+            this.MainMenuStrip = this.menu;
             this.Name = "DataViewer";
             this.Text = "DataViewer";
             this.Load += new System.EventHandler(this.DataViewer_Load);
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
+            this.menu.ResumeLayout(false);
+            this.menu.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -133,14 +173,18 @@
 
         //private System.Windows.Forms.ListView listView1;
         private ListViewNF listView1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Timer timer1;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.Button onlineButton;
+        private System.Windows.Forms.Timer pollingTimer;
+        private System.ComponentModel.BackgroundWorker pollingBackgroundWorker;
+        private System.Windows.Forms.MenuStrip menu;
         private System.Windows.Forms.ToolStripMenuItem fájlToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem megnyitásToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem bezárásToolStripMenuItem;
-        private System.Windows.Forms.Timer timer2;
+        private System.Windows.Forms.Timer UItimer;
+        private System.Windows.Forms.Timer covSubscriptionTimer;
+        private System.Windows.Forms.Button pollingButton;
+        private System.Windows.Forms.TextBox pollingIntervalTextbox;
+        private System.Windows.Forms.Label label1;
     }
 }
 

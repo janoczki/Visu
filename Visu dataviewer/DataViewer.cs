@@ -20,10 +20,11 @@ namespace Visu_dataviewer
 
         private string[] openDatapointFile()
         {
-            var directory = openProjectDirectory();
+            //var directory = openProjectDirectory();
+            var directory = _global.path;
             if (directory != null)
             {
-                _global.path = directory;
+                //_global.path = directory;
                 try
                 {
                     string[] file = File.ReadAllLines(_global.path + "\\adatpontok.dp", Encoding.Default);
@@ -51,10 +52,11 @@ namespace Visu_dataviewer
             return null;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void onlineButton_Click(object sender, EventArgs e)
         {
-            timer1.Enabled = startBacnet();
-            timer2.Enabled = startBacnet();
+            covSubscriptionTimer.Enabled = startBacnet();
+            UItimer.Enabled = true;
+            pollingButton.Enabled = true;
         }
 
         private bool startBacnet()
@@ -73,22 +75,42 @@ namespace Visu_dataviewer
                 dataTable[dataTable.IndexOf(property)][9] = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
                 //dataList.Add(Bac.readValue(1, devIP, devInst, objType, objInst, "PV"));
             }
-
-
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
+        private void subscribe(List<List<string>> dataTable)
         {
-            if (!backgroundWorker1.IsBusy)
-                backgroundWorker1.RunWorkerAsync();
+            foreach (List<string> property in dataTable)
+            {
+                var covSubscriptionRequired = bool.Parse(property[4]);
+                if (covSubscriptionRequired)
+                {
+                    var devIP = property[5];
+                    var devInst = Convert.ToUInt16(property[6]);
+                    var objType = property[7];
+                    var objInst = Convert.ToUInt16(property[8]);
+                    Bac.SubscribeToCoV(1, devIP, devInst, objType, objInst, _global.covLifetime);
+                }
+
+                //dataTable[dataTable.IndexOf(property)][9] = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
+                //dataList.Add(Bac.readValue(1, devIP, devInst, objType, objInst, "PV"));
+            }
         }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        private void pollingTimer_Tick(object sender, EventArgs e)
         {
+            if (!pollingBackgroundWorker.IsBusy)
+                pollingBackgroundWorker.RunWorkerAsync();
+        }
+
+        private void pollingBackgroundworker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            
+            //
+            //cov próba
             readData(_global.bigDatapointTable);
         }
 
-        private void megnyitásToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var file = openDatapointFile();
 
@@ -118,6 +140,7 @@ namespace Visu_dataviewer
 
         private void DataViewer_Load(object sender, EventArgs e)
         {
+            _global.ini();
             listView1.Columns.Add("Object name", 100, HorizontalAlignment.Center);
             listView1.Columns.Add("Object description", 100, HorizontalAlignment.Center);
             listView1.Columns.Add("Object datatype", 100, HorizontalAlignment.Center);
@@ -130,32 +153,43 @@ namespace Visu_dataviewer
             listView1.Columns.Add("Present value", 100, HorizontalAlignment.Center);
         }
 
-        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void UITimer_Tick(object sender, EventArgs e)
         {
-
-            //var result = (List<string>)e.Result;
-
-            //foreach (string item in result)
-            //{
-            //    var ind = result;
-            //    listView1.Items[result.IndexOf(item)].SubItems[6].Text = item;
-            //}
-            ////MessageBox.Show("asd");
-            ////foreach (ListViewItem item in listView1.Items)
-
-            ////{
-            ////    item.SubItems[6].Text = roundedValue.ToString();
-            ////}
-
-        }
-
-        private void timer2_Tick(object sender, EventArgs e)
-        {
-
             foreach (var item in _global.bigDatapointTable)
             {
                 listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[9].Text = item[9];
             }
+        }
+
+        private void QuitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void covSubscriptionTimer_Tick(object sender, EventArgs e)
+        {
+            if (covSubscriptionTimer.Interval == 100)
+            {
+                covSubscriptionTimer.Interval = Convert.ToInt32((_global.covLifetime - 1) * 1000);
+            }
+            subscribe(_global.bigDatapointTable);
+        }
+
+        private void pollingButton_Click(object sender, EventArgs e)
+        {
+            if (pollingButton.Text == "Start polling")
+            {
+                pollingButton.Text = "Stop polling";
+                pollingTimer.Interval = int.Parse(pollingIntervalTextbox.Text) * 1000;
+                pollingTimer.Enabled = true;
+            }
+            else
+            {
+                pollingButton.Text = "Start polling";
+                pollingTimer.Enabled = false;
+            }
+
+
         }
     }
 
