@@ -77,24 +77,7 @@ namespace Visu_dataviewer
             }
         }
 
-        private void subscribe(List<List<string>> dataTable)
-        {
-            foreach (List<string> property in dataTable)
-            {
-                var covSubscriptionRequired = bool.Parse(property[4]);
-                if (covSubscriptionRequired)
-                {
-                    var devIP = property[5];
-                    var devInst = Convert.ToUInt16(property[6]);
-                    var objType = property[7];
-                    var objInst = Convert.ToUInt16(property[8]);
-                    Bac.SubscribeToCoV(1, devIP, devInst, objType, objInst, _global.covLifetime);
-                }
-
-                //dataTable[dataTable.IndexOf(property)][9] = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
-                //dataList.Add(Bac.readValue(1, devIP, devInst, objType, objInst, "PV"));
-            }
-        }
+ 
 
         private void pollingTimer_Tick(object sender, EventArgs e)
         {
@@ -172,7 +155,7 @@ namespace Visu_dataviewer
             {
                 covSubscriptionTimer.Interval = Convert.ToInt32((_global.covLifetime - 1) * 1000);
             }
-            subscribe(_global.bigDatapointTable);
+            Bac.subscribe();
         }
 
         private void pollingButton_Click(object sender, EventArgs e)

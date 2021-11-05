@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO.BACnet;
 using System.Threading;
 using System.Windows.Forms;
+using System.ComponentModel;
 namespace Visu_dataviewer
 {
     public class Bac
@@ -119,17 +120,71 @@ namespace Visu_dataviewer
             }
         }
 
-        public static bool SubscribeToCoV(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, uint duration)
+        public static void subscribe()
         {
-            bool cancel = false;
-            if (duration == 0) cancel = true;
-
-            bacnet_client.SubscribeCOVRequest(
-                bacnetDevice(deviceIP, networkNumber),
-                bacnetNode(objectType, objectInstance), 0, cancel, false, duration);
-
-            return true;
+            var subscriber = new BackgroundWorker();
+            subscriber.DoWork += new DoWorkEventHandler(subscriber_DoWork);
+            subscriber.RunWorkerAsync();
         }
+
+        public static void subscriber_DoWork(object sender, DoWorkEventArgs e)
+        {
+            //subscribe(_global.bigDatapointTable);
+
+            foreach (List<string> property in _global.bigDatapointTable)
+            {
+                var covSubscriptionRequired = bool.Parse(property[4]);
+                if (covSubscriptionRequired)
+                {
+                    var devIP = property[5];
+                    var devInst = Convert.ToUInt16(property[6]);
+                    var objType = property[7];
+                    var objInst = Convert.ToUInt16(property[8]);
+                    //Bac.SubscribeToCoV(1, devIP, devInst, objType, objInst, _global.covLifetime);
+                    bacnet_client.SubscribeCOVRequest(
+                        bacnetDevice(devIP, 1),
+                        bacnetNode(objType, objInst),
+                        0, false, false, _global.covLifetime);
+                }
+            }
+
+        }
+        //private static void subscribe(List<List<string>> dataTable)
+        //{
+
+        //    foreach (List<string> property in dataTable)
+        //    {
+        //        var covSubscriptionRequired = bool.Parse(property[4]);
+        //        if (covSubscriptionRequired)
+        //        {
+        //            var devIP = property[5];
+        //            var devInst = Convert.ToUInt16(property[6]);
+        //            var objType = property[7];
+        //            var objInst = Convert.ToUInt16(property[8]);
+        //            //Bac.SubscribeToCoV(1, devIP, devInst, objType, objInst, _global.covLifetime);
+        //            bacnet_client.SubscribeCOVRequest(
+        //                bacnetDevice(devIP, 1),
+        //                bacnetNode(objType, objInst), 
+        //                0, false, false, _global.covLifetime);
+        //        }
+        //   }
+        //}
+
+        //public static bool SubscribeToCoV(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, uint duration)
+        //{
+
+            
+        //    bool cancel = false;
+        //    if (duration == 0) cancel = true;
+
+        //    bacnet_client.SubscribeCOVRequest(
+        //        bacnetDevice(deviceIP, networkNumber),
+        //        bacnetNode(objectType, objectInstance), 0, cancel, false, duration);
+
+        //    return true;
+        //}
+
+
 
         public static string customTypeFromBacnetObjectType(BacnetObjectTypes objecttype)
         {
@@ -158,28 +213,41 @@ namespace Visu_dataviewer
             return "";
         }
 
+        public static string convertToIP(BacnetAddress adr)
+        {
+            var address = adr.adr;
+            Array.Resize(ref address, 4);
+
+            return new System.Net.IPAddress(address).ToString();
+        }
+
         public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress adr, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId monitoredObjectIdentifier, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
         {
             //BacnetAddress asd = new BacnetAddress(BacnetAddressTypes.IP,)
-            
-            //var asdasd = adr
+
+            var ip = convertToIP(adr);
+            var devInst = initiatingDeviceIdentifier.Instance;
             var objInstance = monitoredObjectIdentifier.Instance;
             var objType = customTypeFromBacnetObjectType(monitoredObjectIdentifier.Type);
             var remainingTime = timeRemaining;
 
-
+            
             foreach (BacnetPropertyValue value in values)
             {
+                
                 switch ((BacnetPropertyIds)value.property.propertyIdentifier)
                 {
                     case BacnetPropertyIds.PROP_PRESENT_VALUE:
-                        //Event = "Értékváltozás";
                         var Value = value.value[0].ToString();
                         
                         foreach(var item in _global.bigDatapointTable)
                         {
-                            if ((item[7] == objType) & 
-                                (item[8] == objInstance.ToString()))
+                            if (
+                                (item[5] == ip) &
+                                (item[6] == devInst.ToString()) &
+                                (item[7] == objType) &
+                                (item[8] == objInstance.ToString())
+                                )
                             {
                                 item[9] = Value;
                                 break;

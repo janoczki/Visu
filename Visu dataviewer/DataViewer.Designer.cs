@@ -47,7 +47,7 @@
             // 
             // onlineButton
             // 
-            this.onlineButton.Location = new System.Drawing.Point(12, 272);
+            this.onlineButton.Location = new System.Drawing.Point(12, 547);
             this.onlineButton.Name = "onlineButton";
             this.onlineButton.Size = new System.Drawing.Size(75, 23);
             this.onlineButton.TabIndex = 1;
@@ -110,9 +110,9 @@
             // 
             // listView1
             // 
-            this.listView1.Location = new System.Drawing.Point(12, 96);
+            this.listView1.Location = new System.Drawing.Point(12, 27);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1128, 170);
+            this.listView1.Size = new System.Drawing.Size(1128, 514);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -120,7 +120,7 @@
             // pollingButton
             // 
             this.pollingButton.Enabled = false;
-            this.pollingButton.Location = new System.Drawing.Point(12, 301);
+            this.pollingButton.Location = new System.Drawing.Point(12, 576);
             this.pollingButton.Name = "pollingButton";
             this.pollingButton.Size = new System.Drawing.Size(75, 23);
             this.pollingButton.TabIndex = 3;
@@ -130,7 +130,7 @@
             // 
             // pollingIntervalTextbox
             // 
-            this.pollingIntervalTextbox.Location = new System.Drawing.Point(93, 303);
+            this.pollingIntervalTextbox.Location = new System.Drawing.Point(93, 578);
             this.pollingIntervalTextbox.Name = "pollingIntervalTextbox";
             this.pollingIntervalTextbox.Size = new System.Drawing.Size(49, 20);
             this.pollingIntervalTextbox.TabIndex = 4;
@@ -140,7 +140,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(148, 306);
+            this.label1.Location = new System.Drawing.Point(148, 581);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(53, 13);
             this.label1.TabIndex = 5;
@@ -151,7 +151,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1152, 441);
+            this.ClientSize = new System.Drawing.Size(1152, 611);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pollingIntervalTextbox);
             this.Controls.Add(this.pollingButton);
