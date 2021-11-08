@@ -11,6 +11,7 @@ namespace Visu_dataviewer
 {
     public class Bac
     {
+
         public static BacnetClient bacnet_client;
 
         public static bool startActivity(string localEndpoint)
@@ -104,8 +105,8 @@ namespace Visu_dataviewer
         {
             BacnetValue Value;
             IList<BacnetValue> NoScalarValue;
-            try
-            {
+            //try
+            //{
                 bacnet_client.ReadPropertyRequest(
                     bacnetDevice(deviceIP, networkNumber),
                     bacnetNode(objectType, objectInstance),
@@ -113,19 +114,104 @@ namespace Visu_dataviewer
                     out NoScalarValue);
                 Value = NoScalarValue[0];
                 return Value.Value.ToString();
-            }
-            catch (Exception ex)
+            //}
+            //catch (Exception ex)
+            //{
+            //    return ex.ToString();
+            //}
+        }
+
+
+
+
+
+        public static void poll()
+        {
+            var poller = new BackgroundWorker();
+            //poller.DoWork += new DoWorkEventHandler(poller_DoWork);
+            //if (!poller.IsBusy)
+            //    poller.RunWorkerAsync();
+            
+            poller.DoWork += new DoWorkEventHandler(poller_DoWork);
+            poller.RunWorkerCompleted += new RunWorkerCompletedEventHandler(poller_RunWorkerCompleted);
+            //if (!_global.asd.IsBusy)
+            //{
+            //    _global.asd.RunWorkerAsync();
+            //}
+            //else
+            //{
+            //var busyCounter = 0;
+            //while (poller.IsBusy)
+            //{
+            //    busyCounter++;
+            //    Application.DoEvents();
+            //}
+
+            //if (busyCounter > 0)
+            //{
+            //    Log.append("Poller is busy");
+            //}
+            poller.RunWorkerAsync();
+            //}
+                
+        }
+
+        private static void poller_DoWork(object sender, DoWorkEventArgs e)
+        {
+            readData(_global.bigDatapointTable);
+        }
+
+        private static void poller_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Log.append("poll complete");
+            sender = null;
+            GC.Collect();
+        }
+
+        private static void readData(List<List<string>> dataTable)
+        {
+            foreach (List<string> property in dataTable)
             {
-                return ex.ToString();
+                var devIP = property[5];
+                var devInst = Convert.ToUInt16(property[6]);
+                var objType = property[7];
+                var objInst = Convert.ToUInt16(property[8]);
+                dataTable[dataTable.IndexOf(property)][9] = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
+                //dataList.Add(Bac.readValue(1, devIP, devInst, objType, objInst, "PV"));
             }
         }
 
         public static void subscribe()
         {
             var subscriber = new BackgroundWorker();
+            //subscriber.DoWork += new DoWorkEventHandler(subscriber_DoWork);
+            //subscriber.RunWorkerAsync();
+
+
             subscriber.DoWork += new DoWorkEventHandler(subscriber_DoWork);
+            subscriber.RunWorkerCompleted += new RunWorkerCompletedEventHandler(subscriber_RunWorkerCompleted);
+
+            //if (!_global.fgh.IsBusy)
+            //{
+            //    _global.fgh.RunWorkerAsync();
+            //}
+            //else
+            //{
+            //    var busyCounter = 0;
+            //    while (_global.fgh.IsBusy)
+            //    {
+            //        busyCounter++;
+            //        Application.DoEvents();
+            //    }
+
+            //    if (busyCounter > 0)
+            //    {
+            //        Log.append("Subscriber is busy");
+            //    }
             subscriber.RunWorkerAsync();
-        }
+            }
+
+        //}
 
         public static void subscriber_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -149,6 +235,12 @@ namespace Visu_dataviewer
             }
 
         }
+
+        private static void subscriber_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Log.append("subscribe complete");
+        }
+
         //private static void subscribe(List<List<string>> dataTable)
         //{
 
@@ -173,7 +265,7 @@ namespace Visu_dataviewer
         //public static bool SubscribeToCoV(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, uint duration)
         //{
 
-            
+
         //    bool cancel = false;
         //    if (duration == 0) cancel = true;
 
@@ -183,8 +275,6 @@ namespace Visu_dataviewer
 
         //    return true;
         //}
-
-
 
         public static string customTypeFromBacnetObjectType(BacnetObjectTypes objecttype)
         {
@@ -221,6 +311,30 @@ namespace Visu_dataviewer
             return new System.Net.IPAddress(address).ToString();
         }
 
+        public static string formatValue(string value, string format)
+        {
+            var correctValue="";
+            //value = value.Replace(',','.');
+            switch (format)
+                
+            {
+                case "int":
+                    correctValue = Convert.ToInt32(double.Parse(value)).ToString();
+                    break;
+                case "uint":
+                    correctValue = value[0] == '-' ? "0" : Convert.ToUInt32(double.Parse(value)).ToString();
+                    break;
+                case "float":
+                    correctValue = Convert.ToDouble(double.Parse(value)).ToString();
+                    break;
+                case "binary":
+                    correctValue = Convert.ToBoolean(double.Parse(value)).ToString();
+                    break;
+            }
+
+            return correctValue;
+        }
+
         public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress adr, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId monitoredObjectIdentifier, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
         {
             //BacnetAddress asd = new BacnetAddress(BacnetAddressTypes.IP,)
@@ -249,7 +363,7 @@ namespace Visu_dataviewer
                                 (item[8] == objInstance.ToString())
                                 )
                             {
-                                item[9] = Value;
+                                item[9] = formatValue(Value,item[2]);
                                 break;
                             }
                         }
@@ -262,7 +376,7 @@ namespace Visu_dataviewer
                     //    string status_text = "";
                     //    if (value.value != null && value.value.Count > 0)
                     //    {
-                    //        // TODO: egyszerre kapom meg a statusflageket, így egyszerre kell visszaadnom az állapotokat
+                    //        // egyszerre kapom meg a statusflageket, így egyszerre kell visszaadnom az állapotokat
                     //        BacnetStatusFlags status = (BacnetStatusFlags)((BacnetBitString)value.value[0].Value).ConvertToInt();
                     //        if ((status & BacnetStatusFlags.STATUS_FLAG_FAULT) == BacnetStatusFlags.STATUS_FLAG_FAULT)
                     //            status_text = "Hibás érték";

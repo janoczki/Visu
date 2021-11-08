@@ -13,6 +13,16 @@ namespace Visu_dataviewer
 {
     public partial class DataViewer : Form
     {
+        // TODO Egyedi polling időzítés lehetőség
+        // TODO Adatformátum konverzió
+        // UNDONE Pollingnál a read néha nem kapja meg valamelyik paramétert, így try-catch kiszedve
+        // TODO logolás indításra
+        // TODO logolás leállásra
+        // TODO logolás hibára
+        // TODO online és cov különszedése
+        // TODO adatvalidálások (adatpont fájl, config fájl, idők)
+
+
         public DataViewer()
         {
             InitializeComponent();
@@ -20,6 +30,7 @@ namespace Visu_dataviewer
 
         private string[] openDatapointFile()
         {
+            Log.append("Opening datapoint file");
             //var directory = openProjectDirectory();
             var directory = _global.path;
             if (directory != null)
@@ -40,6 +51,7 @@ namespace Visu_dataviewer
 
         private string openProjectDirectory()
         {
+            
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
                 DialogResult result = folderBrowserDialog.ShowDialog();
@@ -54,9 +66,16 @@ namespace Visu_dataviewer
 
         private void onlineButton_Click(object sender, EventArgs e)
         {
-            covSubscriptionTimer.Enabled = startBacnet();
+            startBacnet();
+            Log.append("Online mode");
             UItimer.Enabled = true;
             pollingButton.Enabled = true;
+            subscribeButton.Enabled = true;
+        }
+
+        private void subscribeButton_Click(object sender, EventArgs e)
+        {
+            covSubscriptionTimer.Enabled = true;
         }
 
         private bool startBacnet()
@@ -64,33 +83,10 @@ namespace Visu_dataviewer
             return Bac.startActivity("192.168.16.57");
         }
 
-        private void readData(List<List<string>> dataTable)
-        {
-            foreach (List<string> property in dataTable)
-            {
-                var devIP = property[5];
-                var devInst = Convert.ToUInt16(property[6]);
-                var objType = property[7];
-                var objInst = Convert.ToUInt16(property[8]);
-                dataTable[dataTable.IndexOf(property)][9] = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
-                //dataList.Add(Bac.readValue(1, devIP, devInst, objType, objInst, "PV"));
-            }
-        }
-
- 
-
         private void pollingTimer_Tick(object sender, EventArgs e)
         {
-            if (!pollingBackgroundWorker.IsBusy)
-                pollingBackgroundWorker.RunWorkerAsync();
-        }
-
-        private void pollingBackgroundworker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            
-            //
-            //cov próba
-            readData(_global.bigDatapointTable);
+            Log.append("Polling timer tick");
+            Bac.poll();
         }
 
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
@@ -124,6 +120,7 @@ namespace Visu_dataviewer
         private void DataViewer_Load(object sender, EventArgs e)
         {
             _global.ini();
+            Log.append("Application start");
             listView1.Columns.Add("Object name", 100, HorizontalAlignment.Center);
             listView1.Columns.Add("Object description", 100, HorizontalAlignment.Center);
             listView1.Columns.Add("Object datatype", 100, HorizontalAlignment.Center);
@@ -146,11 +143,14 @@ namespace Visu_dataviewer
 
         private void QuitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.append("Quit application");
             Application.Exit();
         }
 
         private void covSubscriptionTimer_Tick(object sender, EventArgs e)
         {
+            Log.append("Subscriber timer tick");
+
             if (covSubscriptionTimer.Interval == 100)
             {
                 covSubscriptionTimer.Interval = Convert.ToInt32((_global.covLifetime - 1) * 1000);
@@ -163,17 +163,22 @@ namespace Visu_dataviewer
             if (pollingButton.Text == "Start polling")
             {
                 pollingButton.Text = "Stop polling";
+                Log.append("Start polling");
                 pollingTimer.Interval = int.Parse(pollingIntervalTextbox.Text) * 1000;
                 pollingTimer.Enabled = true;
+                Bac.poll();
             }
             else
             {
                 pollingButton.Text = "Start polling";
+                Log.append("Stop polling");
                 pollingTimer.Enabled = false;
             }
 
 
         }
+
+
     }
 
     class ListViewNF : System.Windows.Forms.ListView

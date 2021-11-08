@@ -31,23 +31,23 @@
             this.components = new System.ComponentModel.Container();
             this.onlineButton = new System.Windows.Forms.Button();
             this.pollingTimer = new System.Windows.Forms.Timer(this.components);
-            this.pollingBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fájlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.megnyitásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bezárásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UItimer = new System.Windows.Forms.Timer(this.components);
             this.covSubscriptionTimer = new System.Windows.Forms.Timer(this.components);
-            this.listView1 = new Visu_dataviewer.ListViewNF();
             this.pollingButton = new System.Windows.Forms.Button();
             this.pollingIntervalTextbox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.listView1 = new Visu_dataviewer.ListViewNF();
+            this.subscribeButton = new System.Windows.Forms.Button();
             this.menu.SuspendLayout();
             this.SuspendLayout();
             // 
             // onlineButton
             // 
-            this.onlineButton.Location = new System.Drawing.Point(12, 547);
+            this.onlineButton.Location = new System.Drawing.Point(12, 518);
             this.onlineButton.Name = "onlineButton";
             this.onlineButton.Size = new System.Drawing.Size(75, 23);
             this.onlineButton.TabIndex = 1;
@@ -58,10 +58,6 @@
             // pollingTimer
             // 
             this.pollingTimer.Tick += new System.EventHandler(this.pollingTimer_Tick);
-            // 
-            // pollingBackgroundWorker
-            // 
-            this.pollingBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.pollingBackgroundworker_DoWork);
             // 
             // menu
             // 
@@ -108,15 +104,6 @@
             // 
             this.covSubscriptionTimer.Tick += new System.EventHandler(this.covSubscriptionTimer_Tick);
             // 
-            // listView1
-            // 
-            this.listView1.Location = new System.Drawing.Point(12, 27);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1128, 514);
-            this.listView1.TabIndex = 0;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
-            // 
             // pollingButton
             // 
             this.pollingButton.Enabled = false;
@@ -147,11 +134,32 @@
             this.label1.Text = "second(s)";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // listView1
+            // 
+            this.listView1.Location = new System.Drawing.Point(12, 27);
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(1128, 475);
+            this.listView1.TabIndex = 0;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.View = System.Windows.Forms.View.Details;
+            // 
+            // subscribeButton
+            // 
+            this.subscribeButton.Enabled = false;
+            this.subscribeButton.Location = new System.Drawing.Point(12, 547);
+            this.subscribeButton.Name = "subscribeButton";
+            this.subscribeButton.Size = new System.Drawing.Size(75, 23);
+            this.subscribeButton.TabIndex = 6;
+            this.subscribeButton.Text = "Subscribe";
+            this.subscribeButton.UseVisualStyleBackColor = true;
+            this.subscribeButton.Click += new System.EventHandler(this.subscribeButton_Click);
+            // 
             // DataViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1152, 611);
+            this.Controls.Add(this.subscribeButton);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pollingIntervalTextbox);
             this.Controls.Add(this.pollingButton);
@@ -175,7 +183,6 @@
         private ListViewNF listView1;
         private System.Windows.Forms.Button onlineButton;
         private System.Windows.Forms.Timer pollingTimer;
-        private System.ComponentModel.BackgroundWorker pollingBackgroundWorker;
         private System.Windows.Forms.MenuStrip menu;
         private System.Windows.Forms.ToolStripMenuItem fájlToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem megnyitásToolStripMenuItem;
@@ -185,6 +192,7 @@
         private System.Windows.Forms.Button pollingButton;
         private System.Windows.Forms.TextBox pollingIntervalTextbox;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button subscribeButton;
     }
 }
 
