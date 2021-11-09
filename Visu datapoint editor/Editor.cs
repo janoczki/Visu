@@ -24,7 +24,6 @@ namespace Visu_datapoint_editor
             if (file != null)
             {
                 fileToDatagrid(file, dataGridView1);
-                
             }
         }
 
@@ -38,7 +37,7 @@ namespace Visu_datapoint_editor
                 _global.path = directory;
                 try
                 {
-                    string[] file = File.ReadAllLines(_global.path + "\\adatpontok.dp", Encoding.Default);
+                    string[] file = File.ReadAllLines(_global.path + "\\datapoints.bacnetip", Encoding.Default);
                     return file;
                 }
 
@@ -79,17 +78,16 @@ namespace Visu_datapoint_editor
 
         public void createDatagridViewHeader (DataGridView datagrid)
         {
-            datagrid.ColumnCount = 10;
-            dataGridView1.Columns[0].Name = "ID";
-            dataGridView1.Columns[1].Name = "Object name";
-            dataGridView1.Columns[2].Name = "Object description";
-            dataGridView1.Columns[3].Name = "Object datatype";
-            dataGridView1.Columns[4].Name = "Save";
-            dataGridView1.Columns[5].Name = "Change of value";
-            dataGridView1.Columns[6].Name = "Device IP";
-            dataGridView1.Columns[7].Name = "Device instance";
-            dataGridView1.Columns[8].Name = "Object type";
-            dataGridView1.Columns[9].Name = "Object instance";
+            datagrid.ColumnCount = 9;
+            dataGridView1.Columns[0].Name = "Object name";
+            dataGridView1.Columns[1].Name = "Object description";
+            dataGridView1.Columns[2].Name = "Object datatype";
+            dataGridView1.Columns[3].Name = "Save";
+            dataGridView1.Columns[4].Name = "Change of value";
+            dataGridView1.Columns[5].Name = "Device IP";
+            dataGridView1.Columns[6].Name = "Device instance";
+            dataGridView1.Columns[7].Name = "Object type";
+            dataGridView1.Columns[8].Name = "Object instance";
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -118,15 +116,15 @@ namespace Visu_datapoint_editor
             {
                 dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 dataGridView1.Rows[rIndex].Selected = true;
-                edit.textBox1.Text = dataGridView1.SelectedCells[1].Value.ToString();
-                edit.textBox2.Text = dataGridView1.SelectedCells[2].Value.ToString();
-                edit.comboBox1.Text = dataGridView1.SelectedCells[3].Value.ToString();
-                edit.checkBox1.Checked = bool.Parse(dataGridView1.SelectedCells[4].Value.ToString());
-                edit.checkBox2.Checked = bool.Parse(dataGridView1.SelectedCells[5].Value.ToString());
-                edit.textBox3.Text = dataGridView1.SelectedCells[6].Value.ToString();
-                edit.textBox4.Text = dataGridView1.SelectedCells[7].Value.ToString();
-                edit.comboBox2.Text = dataGridView1.SelectedCells[8].Value.ToString();
-                edit.textBox5.Text = dataGridView1.SelectedCells[9].Value.ToString();
+                edit.textBox1.Text = dataGridView1.SelectedCells[0].Value.ToString();
+                edit.textBox2.Text = dataGridView1.SelectedCells[1].Value.ToString();
+                edit.comboBox1.Text = dataGridView1.SelectedCells[2].Value.ToString();
+                edit.checkBox1.Checked = bool.Parse(dataGridView1.SelectedCells[3].Value.ToString());
+                edit.checkBox2.Checked = bool.Parse(dataGridView1.SelectedCells[4].Value.ToString());
+                edit.textBox3.Text = dataGridView1.SelectedCells[5].Value.ToString();
+                edit.textBox4.Text = dataGridView1.SelectedCells[6].Value.ToString();
+                edit.comboBox2.Text = dataGridView1.SelectedCells[7].Value.ToString();
+                edit.textBox5.Text = dataGridView1.SelectedCells[8].Value.ToString();
                 dataGridView1.SelectionMode = DataGridViewSelectionMode.CellSelect;
                 dataGridView1.CurrentCell = dataGridView1[cIndex, rIndex];
             }
@@ -135,7 +133,7 @@ namespace Visu_datapoint_editor
 
         private void mentésToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var path = _global.path + "\\adatpontok.dp";
+            var path = _global.path + "\\datapoints.bacnetip";
             var content = collectDataToSave();
             File.WriteAllText(path, content);
         }
@@ -147,11 +145,11 @@ namespace Visu_datapoint_editor
             {
                 if (row.Index < dataGridView1.RowCount - 1)
                 {
-                    for (int i = 0; i <= 8; i++)
+                    for (int i = 0; i <= 7; i++)
                     {
                         collection = collection + row.Cells[i].Value + ";";
                     }
-                    collection = collection + row.Cells[9].Value + System.Environment.NewLine;
+                    collection = collection + row.Cells[8].Value + System.Environment.NewLine;
                 }
             }
             return collection;
@@ -159,7 +157,8 @@ namespace Visu_datapoint_editor
 
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            openEdit();
+            if (e.RowIndex != -1)
+                openEdit();
         }
 
         private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -188,7 +187,7 @@ namespace Visu_datapoint_editor
 
         private void dataGridView1_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
-            dataGridView1[0, dataGridView1.Rows.Count-1].Value = _global.maxID + 1;
+            dataGridView1[0, dataGridView1.Rows.Count-1].Value = "Adatpont_" + _global.maxID + 1;
             _global.maxID++;
         }
 

@@ -18,6 +18,7 @@ namespace Visu_dataviewer
         public static BackgroundWorker asd;
         public static BackgroundWorker fgh;
 
+
         static _global()
         {
             bigDatapointTable = new List<List<string>>();

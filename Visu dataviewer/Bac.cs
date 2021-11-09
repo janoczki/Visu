@@ -121,10 +121,6 @@ namespace Visu_dataviewer
             //}
         }
 
-
-
-
-
         public static void poll()
         {
             var poller = new BackgroundWorker();
@@ -364,6 +360,7 @@ namespace Visu_dataviewer
                                 )
                             {
                                 item[9] = formatValue(Value,item[2]);
+                                Sql.write(item[0], item[9], DateTime.Now.ToString());
                                 break;
                             }
                         }
@@ -409,5 +406,95 @@ namespace Visu_dataviewer
                 sender.SimpleAckResponse(adr, BacnetConfirmedServices.SERVICE_CONFIRMED_COV_NOTIFICATION, invoke_id);
             }
         }
+
+        public static bool writeValue(ushort networkNumber, string deviceIP, string deviceInstance, string objectType, uint objectInstance, int valueToBeWritten)
+        {
+            bool ret;
+            bacnet_client.WritePriority = 8;
+            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten) };
+            //BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(Convert.ToSingle(valueToBeWritten)) };
+
+
+            switch (objectType.Substring(0, 1))
+            {
+                case "A":
+                    bacnetValueToBeWritten[0].Value = Convert.ToSingle(bacnetValueToBeWritten[0].Value);
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL;
+                    break;
+                case "B":
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED;
+                    break;
+
+                case "M":
+                    bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT;
+                    break;
+                default:
+                    string asd = objectType.Substring(1, 1);
+                    break;
+            }
+
+            try
+            {
+                ret = bacnet_client.WritePropertyRequest(
+                    bacnetDevice(deviceIP, networkNumber),
+                    bacnetNode(objectType, objectInstance),
+                    BacnetPropertyIds.PROP_PRESENT_VALUE,
+                    bacnetValueToBeWritten);
+                return ret;
+            }
+            catch (Exception e)
+            {
+                string read = "Error from device: ERROR_CLASS_PROPERTY - ERROR_CODE_WRITE_ACCESS_DENIED";
+
+                if (e.Message == read)
+                {
+                    MessageBox.Show("Ez az adatpont nem írható");
+                }
+                else
+                {
+                    MessageBox.Show(e.Message);
+                }
+                return false;
+            }
+        }
+
+        public static bool resetValue(ushort networkNumber, string deviceIP, string deviceInstance, string objectType, uint objectInstance)
+        {
+            bool ret;
+            bacnet_client.WritePriority = 8;
+            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(null) };
+            //BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(Convert.ToSingle(valueToBeWritten)) };
+
+
+            switch (objectType.Substring(0, 1))
+            {
+                case "A":
+                    bacnetValueToBeWritten[0].Value = Convert.ToSingle(bacnetValueToBeWritten[0].Value);
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL;
+                    break;
+                case "B":
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED;
+                    break;
+
+                case "M":
+                    bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT;
+                    break;
+                default:
+                    string asd = objectType.Substring(1, 1);
+                    break;
+
+            }
+
+            ret = bacnet_client.WritePropertyRequest(
+                bacnetDevice(deviceIP, networkNumber),
+                bacnetNode(objectType, objectInstance),
+                BacnetPropertyIds.PROP_PRESENT_VALUE,
+                bacnetValueToBeWritten);
+            return ret;
+
+        }
+
     }
 }

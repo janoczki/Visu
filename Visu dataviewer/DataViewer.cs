@@ -14,12 +14,10 @@ namespace Visu_dataviewer
     public partial class DataViewer : Form
     {
         // TODO Egyedi polling időzítés lehetőség
-        // TODO Adatformátum konverzió
         // UNDONE Pollingnál a read néha nem kapja meg valamelyik paramétert, így try-catch kiszedve
         // TODO logolás indításra
         // TODO logolás leállásra
         // TODO logolás hibára
-        // TODO online és cov különszedése
         // TODO adatvalidálások (adatpont fájl, config fájl, idők)
 
 
@@ -38,12 +36,12 @@ namespace Visu_dataviewer
                 //_global.path = directory;
                 try
                 {
-                    string[] file = File.ReadAllLines(_global.path + "\\adatpontok.dp", Encoding.Default);
+                    string[] file = File.ReadAllLines(_global.path + "\\datapoints.bacnetip", Encoding.Default);
                     return file;
                 }
                 catch (FileNotFoundException)
                 {
-                    MessageBox.Show("A megadott projektben nem található az adatpontokat definiáló fájl");
+                    MessageBox.Show("A megadott projektben nem található a Bacnet IP adatpontokat definiáló fájl");
                 }
             }
             return null;
@@ -92,28 +90,13 @@ namespace Visu_dataviewer
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var file = openDatapointFile();
-
             foreach (string item in file)
             {
                 var itemProperty = item.Split(';').ToList();
                 itemProperty.Add("");
                 _global.bigDatapointTable.Add(itemProperty);
-
                 var itemPropertyArray = itemProperty.ToArray();
-                //_global.bigDatapointTable.Add(itemProperty.ToList());
                 listView1.Items.Add(new ListViewItem(itemPropertyArray));
-
-                //string[] row = {
-                //    itemProperty[0],
-                //    itemProperty[1],
-                //    itemProperty[2],
-                //    itemProperty[3],
-                //    itemProperty[4],
-                //    itemProperty[5],
-                //    itemProperty[6],
-                //    itemProperty[7],
-                //    itemProperty[8],
-                //    ""};
             }
         }
 
@@ -178,7 +161,34 @@ namespace Visu_dataviewer
 
         }
 
+        private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            //MessageBox.Show(listView1.SelectedItems[0].SubItems[0].Text);
+            var edit = Application.OpenForms["ReaderWriter"] as ReaderWriter;
 
+            if (edit == null)
+            {
+                edit = new ReaderWriter();
+            }
+            edit.selected = listView1.SelectedItems[0];
+            edit.nameLabel.Text = listView1.SelectedItems[0].SubItems[0].Text;
+            edit.descLabel.Text = listView1.SelectedItems[0].SubItems[1].Text;
+            edit.typeLabel.Text = listView1.SelectedItems[0].SubItems[2].Text;
+            edit.recLabel.Text = listView1.SelectedItems[0].SubItems[3].Text;
+            edit.objCovLabel.Text = listView1.SelectedItems[0].SubItems[4].Text;
+            edit.devIPLabel.Text = listView1.SelectedItems[0].SubItems[5].Text;
+            edit.devInstLabel.Text = listView1.SelectedItems[0].SubItems[6].Text;
+            edit.objTypeLabel.Text = listView1.SelectedItems[0].SubItems[7].Text;
+            edit.objInstLabel.Text = listView1.SelectedItems[0].SubItems[8].Text;
+            edit.readedValueLabel.Text = listView1.SelectedItems[0].SubItems[9].Text;
+            edit.Show();
+            
+        }
+
+        private void sqlConnectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Sql.connect();
+        }
     }
 
     class ListViewNF : System.Windows.Forms.ListView

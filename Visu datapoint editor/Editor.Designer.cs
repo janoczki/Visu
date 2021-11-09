@@ -89,7 +89,7 @@
             // 
             this.megnyitásToolStripMenuItem.Name = "megnyitásToolStripMenuItem";
             this.megnyitásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.megnyitásToolStripMenuItem.Text = "Open";
             this.megnyitásToolStripMenuItem.Click += new System.EventHandler(this.megnyitásToolStripMenuItem_Click);
             // 
@@ -97,7 +97,7 @@
             // 
             this.mentésToolStripMenuItem.Name = "mentésToolStripMenuItem";
             this.mentésToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.mentésToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.mentésToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.mentésToolStripMenuItem.Text = "Save";
             this.mentésToolStripMenuItem.Click += new System.EventHandler(this.mentésToolStripMenuItem_Click);
             // 

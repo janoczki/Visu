@@ -40,8 +40,9 @@
             this.pollingButton = new System.Windows.Forms.Button();
             this.pollingIntervalTextbox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.listView1 = new Visu_dataviewer.ListViewNF();
             this.subscribeButton = new System.Windows.Forms.Button();
+            this.listView1 = new Visu_dataviewer.ListViewNF();
+            this.sqlConnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,7 +74,8 @@
             // 
             this.fájlToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.megnyitásToolStripMenuItem,
-            this.bezárásToolStripMenuItem});
+            this.bezárásToolStripMenuItem,
+            this.sqlConnectToolStripMenuItem});
             this.fájlToolStripMenuItem.Name = "fájlToolStripMenuItem";
             this.fájlToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
             this.fájlToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
@@ -83,7 +85,7 @@
             // 
             this.megnyitásToolStripMenuItem.Name = "megnyitásToolStripMenuItem";
             this.megnyitásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.megnyitásToolStripMenuItem.Text = "Open";
             this.megnyitásToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
@@ -91,7 +93,7 @@
             // 
             this.bezárásToolStripMenuItem.Name = "bezárásToolStripMenuItem";
             this.bezárásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
-            this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.bezárásToolStripMenuItem.Text = "Quit";
             this.bezárásToolStripMenuItem.Click += new System.EventHandler(this.QuitToolStripMenuItem_Click);
             // 
@@ -134,15 +136,6 @@
             this.label1.Text = "second(s)";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // listView1
-            // 
-            this.listView1.Location = new System.Drawing.Point(12, 27);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1128, 475);
-            this.listView1.TabIndex = 0;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
-            // 
             // subscribeButton
             // 
             this.subscribeButton.Enabled = false;
@@ -153,6 +146,24 @@
             this.subscribeButton.Text = "Subscribe";
             this.subscribeButton.UseVisualStyleBackColor = true;
             this.subscribeButton.Click += new System.EventHandler(this.subscribeButton_Click);
+            // 
+            // listView1
+            // 
+            this.listView1.FullRowSelect = true;
+            this.listView1.Location = new System.Drawing.Point(12, 27);
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(1128, 475);
+            this.listView1.TabIndex = 0;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.View = System.Windows.Forms.View.Details;
+            this.listView1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseDoubleClick);
+            // 
+            // sqlConnectToolStripMenuItem
+            // 
+            this.sqlConnectToolStripMenuItem.Name = "sqlConnectToolStripMenuItem";
+            this.sqlConnectToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sqlConnectToolStripMenuItem.Text = "Sql connect";
+            this.sqlConnectToolStripMenuItem.Click += new System.EventHandler(this.sqlConnectToolStripMenuItem_Click);
             // 
             // DataViewer
             // 
@@ -193,6 +204,7 @@
         private System.Windows.Forms.TextBox pollingIntervalTextbox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button subscribeButton;
+        private System.Windows.Forms.ToolStripMenuItem sqlConnectToolStripMenuItem;
     }
 }
 
