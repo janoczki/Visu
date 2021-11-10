@@ -22,21 +22,44 @@ namespace Visu_dataviewer
             builder.DataSource = "ANDRASGEP\\SQLEXPRESS";
             builder.UserID = "sa";
             builder.Password = "Sauter12345";
-
-        }
-
-
-
-        public static string lofasz()
-        {
-            return builder.ConnectionString;
         }
 
         public static void connect()
         {
             connection.ConnectionString = builder.ConnectionString;
             connection.Open();
-            //read();
+        }
+
+        public static void writeList(List<List<string>> list,int quantity)
+        {
+            
+            var allDataRow = "";
+            for (int i = 0; i < quantity; i++)
+            {
+                //var dataRow = "";
+                var dataRow = String.Join("','", list[i]);
+                //dataRow = "VALUES(" + dataRow + ")";
+                if (i != quantity - 1)
+                {
+                    dataRow = "('" + dataRow + "')," + Environment.NewLine;
+                }
+                else
+                {
+                    dataRow = "('" + dataRow + "')" + Environment.NewLine;
+                }
+                allDataRow = allDataRow + dataRow;
+            }
+
+            allDataRow = allDataRow + ";";
+            
+            
+
+
+            string queryString =
+                "INSERT INTO [database].[dbo].[table] ([Datapoint name], [Datapoint value], Timestamp) VALUES " + allDataRow;
+
+            SqlCommand command = new SqlCommand(queryString, connection);
+            command.ExecuteNonQuery();
         }
 
         public static void write(string name, string value, string timestamp)
@@ -44,18 +67,16 @@ namespace Visu_dataviewer
             timestamp = timestamp.Replace('.', '-');
             timestamp = timestamp.Replace("- "," ");
             string queryString =
-                "INSERT INTO [database].[dbo].[datatable] ([Datapoint name], [Datapoint value], Timestamp) VALUES('" + name + "', '" + value + "', '" + timestamp + "'); ";
+                "INSERT INTO [database].[dbo].[table] ([Datapoint name], [Datapoint value], Timestamp) VALUES('" + name + "', '" + value + "', '" + timestamp + "'); ";
             SqlCommand command = new SqlCommand(queryString, connection);
             command.ExecuteNonQuery();
-
         }
+
         public static string read()
         {
-            string queryString = "SELECT * FROM [database].[dbo].[datatable]";
-
+            string queryString = "SELECT * FROM [database].[dbo].[table]";
             SqlCommand command = new SqlCommand(queryString, connection);
             SqlDataReader reader = command.ExecuteReader();
-
             try
             {
                 while (reader.Read())
@@ -69,5 +90,7 @@ namespace Visu_dataviewer
             }
             return "";
         }
+
+
     }
 }

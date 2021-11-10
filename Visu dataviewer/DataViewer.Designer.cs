@@ -35,6 +35,7 @@
             this.fájlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.megnyitásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bezárásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sqlConnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UItimer = new System.Windows.Forms.Timer(this.components);
             this.covSubscriptionTimer = new System.Windows.Forms.Timer(this.components);
             this.pollingButton = new System.Windows.Forms.Button();
@@ -42,7 +43,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.subscribeButton = new System.Windows.Forms.Button();
             this.listView1 = new Visu_dataviewer.ListViewNF();
-            this.sqlConnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -96,6 +96,13 @@
             this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.bezárásToolStripMenuItem.Text = "Quit";
             this.bezárásToolStripMenuItem.Click += new System.EventHandler(this.QuitToolStripMenuItem_Click);
+            // 
+            // sqlConnectToolStripMenuItem
+            // 
+            this.sqlConnectToolStripMenuItem.Name = "sqlConnectToolStripMenuItem";
+            this.sqlConnectToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sqlConnectToolStripMenuItem.Text = "Sql connect";
+            this.sqlConnectToolStripMenuItem.Click += new System.EventHandler(this.sqlConnectToolStripMenuItem_Click);
             // 
             // UItimer
             // 
@@ -157,13 +164,6 @@
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseDoubleClick);
-            // 
-            // sqlConnectToolStripMenuItem
-            // 
-            this.sqlConnectToolStripMenuItem.Name = "sqlConnectToolStripMenuItem";
-            this.sqlConnectToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.sqlConnectToolStripMenuItem.Text = "Sql connect";
-            this.sqlConnectToolStripMenuItem.Click += new System.EventHandler(this.sqlConnectToolStripMenuItem_Click);
             // 
             // DataViewer
             // 

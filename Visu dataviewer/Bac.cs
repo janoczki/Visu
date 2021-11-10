@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.BACnet;
-using System.Threading;
+//using System.Threading;
 using System.Windows.Forms;
 using System.ComponentModel;
 namespace Visu_dataviewer
@@ -19,7 +19,7 @@ namespace Visu_dataviewer
             try
             {
                 bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
-                bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);       
+                bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);
                 bacnet_client.Start();
                 return true;
             }
@@ -107,13 +107,13 @@ namespace Visu_dataviewer
             IList<BacnetValue> NoScalarValue;
             //try
             //{
-                bacnet_client.ReadPropertyRequest(
-                    bacnetDevice(deviceIP, networkNumber),
-                    bacnetNode(objectType, objectInstance),
-                    getPropertyId(property),
-                    out NoScalarValue);
-                Value = NoScalarValue[0];
-                return Value.Value.ToString();
+            bacnet_client.ReadPropertyRequest(
+                bacnetDevice(deviceIP, networkNumber),
+                bacnetNode(objectType, objectInstance),
+                getPropertyId(property),
+                out NoScalarValue);
+            Value = NoScalarValue[0];
+            return Value.Value.ToString();
             //}
             //catch (Exception ex)
             //{
@@ -121,35 +121,33 @@ namespace Visu_dataviewer
             //}
         }
 
+        public static string readMultipleValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
+        {
+            var objId = new BacnetObjectId(BacnetObjectTypes.OBJECT_ANALOG_VALUE, 0);
+
+            var propRefs = new List<BacnetPropertyReference>();
+            propRefs.Add(new BacnetPropertyReference((uint)BacnetPropertyIds.PROP_PRESENT_VALUE, System.IO.BACnet.Serialize.ASN1.BACNET_ARRAY_ALL));
+            propRefs.Add(new BacnetPropertyReference((uint)BacnetPropertyIds.PROP_DESCRIPTION, System.IO.BACnet.Serialize.ASN1.BACNET_ARRAY_ALL));
+            propRefs.Add(new BacnetPropertyReference((uint)BacnetPropertyIds.PROP_UNITS, System.IO.BACnet.Serialize.ASN1.BACNET_ARRAY_ALL));
+
+            var spec = new BacnetReadAccessSpecification(objId, propRefs);
+            var specs = new List<BacnetReadAccessSpecification>() {spec };
+            //specs.Add(spec);
+
+            IList<BacnetReadAccessResult> results;
+            bacnet_client.ReadPropertyMultipleRequest(
+                bacnetDevice(deviceIP, networkNumber)
+                , specs, out results);
+
+            return "";
+        }
+
         public static void poll()
         {
             var poller = new BackgroundWorker();
-            //poller.DoWork += new DoWorkEventHandler(poller_DoWork);
-            //if (!poller.IsBusy)
-            //    poller.RunWorkerAsync();
-            
             poller.DoWork += new DoWorkEventHandler(poller_DoWork);
             poller.RunWorkerCompleted += new RunWorkerCompletedEventHandler(poller_RunWorkerCompleted);
-            //if (!_global.asd.IsBusy)
-            //{
-            //    _global.asd.RunWorkerAsync();
-            //}
-            //else
-            //{
-            //var busyCounter = 0;
-            //while (poller.IsBusy)
-            //{
-            //    busyCounter++;
-            //    Application.DoEvents();
-            //}
-
-            //if (busyCounter > 0)
-            //{
-            //    Log.append("Poller is busy");
-            //}
             poller.RunWorkerAsync();
-            //}
-                
         }
 
         private static void poller_DoWork(object sender, DoWorkEventArgs e)
@@ -168,12 +166,18 @@ namespace Visu_dataviewer
         {
             foreach (List<string> property in dataTable)
             {
+                var cov = property[4];
                 var devIP = property[5];
                 var devInst = Convert.ToUInt16(property[6]);
                 var objType = property[7];
                 var objInst = Convert.ToUInt16(property[8]);
-                dataTable[dataTable.IndexOf(property)][9] = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
-                //dataList.Add(Bac.readValue(1, devIP, devInst, objType, objInst, "PV"));
+
+                if (bool.Parse(cov) == false)
+                {
+                    var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                    dataTable[dataTable.IndexOf(property)][9] = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
+                    _global.dataTransfer.Add(new List<string> { property[0], property[9], timestamp });
+                }
             }
         }
 
@@ -205,7 +209,7 @@ namespace Visu_dataviewer
             //        Log.append("Subscriber is busy");
             //    }
             subscriber.RunWorkerAsync();
-            }
+        }
 
         //}
 
@@ -309,10 +313,9 @@ namespace Visu_dataviewer
 
         public static string formatValue(string value, string format)
         {
-            var correctValue="";
-            //value = value.Replace(',','.');
+            var correctValue = "";
             switch (format)
-                
+
             {
                 case "int":
                     correctValue = Convert.ToInt32(double.Parse(value)).ToString();
@@ -333,24 +336,23 @@ namespace Visu_dataviewer
 
         public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress adr, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId monitoredObjectIdentifier, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
         {
-            //BacnetAddress asd = new BacnetAddress(BacnetAddressTypes.IP,)
-
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
             var ip = convertToIP(adr);
             var devInst = initiatingDeviceIdentifier.Instance;
             var objInstance = monitoredObjectIdentifier.Instance;
             var objType = customTypeFromBacnetObjectType(monitoredObjectIdentifier.Type);
             var remainingTime = timeRemaining;
-
             
+
             foreach (BacnetPropertyValue value in values)
             {
-                
+
                 switch ((BacnetPropertyIds)value.property.propertyIdentifier)
                 {
                     case BacnetPropertyIds.PROP_PRESENT_VALUE:
                         var Value = value.value[0].ToString();
-                        
-                        foreach(var item in _global.bigDatapointTable)
+
+                        foreach (var item in _global.bigDatapointTable)
                         {
                             if (
                                 (item[5] == ip) &
@@ -359,8 +361,12 @@ namespace Visu_dataviewer
                                 (item[8] == objInstance.ToString())
                                 )
                             {
-                                item[9] = formatValue(Value,item[2]);
-                                Sql.write(item[0], item[9], DateTime.Now.ToString());
+                                item[9] = formatValue(Value, item[2]);
+                                if (bool.Parse(item[3]))
+                                {
+                                    
+                                    _global.dataTransfer.Add(new List<string> { item[0], item[9], timestamp });
+                                }
                                 break;
                             }
                         }
@@ -495,6 +501,5 @@ namespace Visu_dataviewer
             return ret;
 
         }
-
     }
 }

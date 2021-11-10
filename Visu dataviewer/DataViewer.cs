@@ -159,7 +159,7 @@ namespace Visu_dataviewer
             }
 
 
-        }
+}
 
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
