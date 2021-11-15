@@ -8,13 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-
+using System.Timers;
 namespace Visu_dataviewer
 {
     public partial class DataViewer : Form
     {
-        // TODO Egyedi polling időzítés lehetőség
-        // UNDONE Pollingnál a read néha nem kapja meg valamelyik paramétert, így try-catch kiszedve
+        // UNDONE Egyedi polling időzítés lehetőség, nem thread safe, így elvetve
         // TODO logolás indításra
         // TODO logolás leállásra
         // TODO logolás hibára
@@ -94,10 +93,18 @@ namespace Visu_dataviewer
             {
                 var itemProperty = item.Split(';').ToList();
                 itemProperty.Add("");
+                itemProperty.Add("");
                 _global.bigDatapointTable.Add(itemProperty);
                 var itemPropertyArray = itemProperty.ToArray();
                 listView1.Items.Add(new ListViewItem(itemPropertyArray));
             }
+
+            Sql.connect();
+            Bac.startActivity("192.168.16.57");
+            Bac.subscribe();
+
+
+            UItimer.Enabled = true;
         }
 
         private void DataViewer_Load(object sender, EventArgs e)
@@ -157,9 +164,9 @@ namespace Visu_dataviewer
                 Log.append("Stop polling");
                 pollingTimer.Enabled = false;
             }
+        }
 
 
-}
 
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
         {

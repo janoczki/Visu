@@ -7,28 +7,14 @@ using System.IO.BACnet;
 //using System.Threading;
 using System.Windows.Forms;
 using System.ComponentModel;
+using System.Timers;
+
 namespace Visu_dataviewer
 {
     public class Bac
     {
 
         public static BacnetClient bacnet_client;
-
-        public static bool startActivity(string localEndpoint)
-        {
-            try
-            {
-                bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
-                bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);
-                bacnet_client.Start();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return false;
-            }
-        }
 
         public static BacnetPropertyIds getPropertyId(string prop)
 
@@ -101,45 +87,55 @@ namespace Visu_dataviewer
             return bacnetDev;
         }
 
+        public static bool startActivity(string localEndpoint)
+        {
+            try
+            {
+                bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
+                bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);
+                bacnet_client.Start();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+        }
+
+
+        #region read
+
         public static string readValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
         {
             BacnetValue Value;
             IList<BacnetValue> NoScalarValue;
-            //try
-            //{
+
             bacnet_client.ReadPropertyRequest(
                 bacnetDevice(deviceIP, networkNumber),
                 bacnetNode(objectType, objectInstance),
                 getPropertyId(property),
                 out NoScalarValue);
+
+
             Value = NoScalarValue[0];
+
+            if (deviceIP == "192.168.16.156" &&
+    deviceInstance == 156 &&
+    objectType == "BO" &&
+    objectInstance == 0 &&
+    Value.Value.ToString() != "0")
+            {
+                var asd = property;
+            }
+
             return Value.Value.ToString();
+
             //}
             //catch (Exception ex)
             //{
             //    return ex.ToString();
             //}
-        }
-
-        public static string readMultipleValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
-        {
-            var objId = new BacnetObjectId(BacnetObjectTypes.OBJECT_ANALOG_VALUE, 0);
-
-            var propRefs = new List<BacnetPropertyReference>();
-            propRefs.Add(new BacnetPropertyReference((uint)BacnetPropertyIds.PROP_PRESENT_VALUE, System.IO.BACnet.Serialize.ASN1.BACNET_ARRAY_ALL));
-            propRefs.Add(new BacnetPropertyReference((uint)BacnetPropertyIds.PROP_DESCRIPTION, System.IO.BACnet.Serialize.ASN1.BACNET_ARRAY_ALL));
-            propRefs.Add(new BacnetPropertyReference((uint)BacnetPropertyIds.PROP_UNITS, System.IO.BACnet.Serialize.ASN1.BACNET_ARRAY_ALL));
-
-            var spec = new BacnetReadAccessSpecification(objId, propRefs);
-            var specs = new List<BacnetReadAccessSpecification>() {spec };
-            //specs.Add(spec);
-
-            IList<BacnetReadAccessResult> results;
-            bacnet_client.ReadPropertyMultipleRequest(
-                bacnetDevice(deviceIP, networkNumber)
-                , specs, out results);
-
-            return "";
         }
 
         public static void poll()
@@ -181,37 +177,64 @@ namespace Visu_dataviewer
             }
         }
 
+        public static bool writeValue(ushort networkNumber, string deviceIP, string deviceInstance, string objectType, uint objectInstance, Nullable<int> valueToBeWritten)
+        {
+            bool ret;
+            bacnet_client.WritePriority = 8;
+            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten) };
+
+            switch (objectType.Substring(0, 1))
+            {
+                case "A":
+                    bacnetValueToBeWritten[0].Value = Convert.ToSingle(bacnetValueToBeWritten[0].Value);
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL;
+                    break;
+                case "B":
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED;
+                    break;
+
+                case "M":
+                    bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
+                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT;
+                    break;
+            }
+
+            try
+            {
+                ret = bacnet_client.WritePropertyRequest(
+                    bacnetDevice(deviceIP, networkNumber),
+                    bacnetNode(objectType, objectInstance),
+                    BacnetPropertyIds.PROP_PRESENT_VALUE,
+                    bacnetValueToBeWritten);
+                return ret;
+            }
+            catch (Exception e)
+            {
+                string read = "Error from device: ERROR_CLASS_PROPERTY - ERROR_CODE_WRITE_ACCESS_DENIED";
+
+                if (e.Message == read)
+                {
+                    MessageBox.Show("Ez az adatpont nem írható");
+                }
+                else
+                {
+                    MessageBox.Show(e.Message);
+                }
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region CoV
+
         public static void subscribe()
         {
             var subscriber = new BackgroundWorker();
-            //subscriber.DoWork += new DoWorkEventHandler(subscriber_DoWork);
-            //subscriber.RunWorkerAsync();
-
-
             subscriber.DoWork += new DoWorkEventHandler(subscriber_DoWork);
             subscriber.RunWorkerCompleted += new RunWorkerCompletedEventHandler(subscriber_RunWorkerCompleted);
-
-            //if (!_global.fgh.IsBusy)
-            //{
-            //    _global.fgh.RunWorkerAsync();
-            //}
-            //else
-            //{
-            //    var busyCounter = 0;
-            //    while (_global.fgh.IsBusy)
-            //    {
-            //        busyCounter++;
-            //        Application.DoEvents();
-            //    }
-
-            //    if (busyCounter > 0)
-            //    {
-            //        Log.append("Subscriber is busy");
-            //    }
             subscriber.RunWorkerAsync();
         }
-
-        //}
 
         public static void subscriber_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -241,41 +264,88 @@ namespace Visu_dataviewer
             Log.append("subscribe complete");
         }
 
-        //private static void subscribe(List<List<string>> dataTable)
-        //{
-
-        //    foreach (List<string> property in dataTable)
-        //    {
-        //        var covSubscriptionRequired = bool.Parse(property[4]);
-        //        if (covSubscriptionRequired)
-        //        {
-        //            var devIP = property[5];
-        //            var devInst = Convert.ToUInt16(property[6]);
-        //            var objType = property[7];
-        //            var objInst = Convert.ToUInt16(property[8]);
-        //            //Bac.SubscribeToCoV(1, devIP, devInst, objType, objInst, _global.covLifetime);
-        //            bacnet_client.SubscribeCOVRequest(
-        //                bacnetDevice(devIP, 1),
-        //                bacnetNode(objType, objInst), 
-        //                0, false, false, _global.covLifetime);
-        //        }
-        //   }
-        //}
-
-        //public static bool SubscribeToCoV(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, uint duration)
-        //{
+        public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress adr, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId monitoredObjectIdentifier, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
+        {
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var ip = convertToIP(adr);
+            var devInst = initiatingDeviceIdentifier.Instance;
+            var objInstance = monitoredObjectIdentifier.Instance;
+            var objType = customTypeFromBacnetObjectType(monitoredObjectIdentifier.Type);
+            var remainingTime = timeRemaining;
 
 
-        //    bool cancel = false;
-        //    if (duration == 0) cancel = true;
+            foreach (BacnetPropertyValue value in values)
+            {
 
-        //    bacnet_client.SubscribeCOVRequest(
-        //        bacnetDevice(deviceIP, networkNumber),
-        //        bacnetNode(objectType, objectInstance), 0, cancel, false, duration);
+                switch ((BacnetPropertyIds)value.property.propertyIdentifier)
+                {
+                    case BacnetPropertyIds.PROP_PRESENT_VALUE:
+                        var rawData = value.value[0].ToString();
 
-        //    return true;
-        //}
+                        foreach (var item in _global.bigDatapointTable)
+                        {
+                            if (
+                                (item[5] == ip) &
+                                (item[6] == devInst.ToString()) &
+                                (item[7] == objType) &
+                                (item[8] == objInstance.ToString())
+                                )
+                            {
+                                item[9] = formatValue(rawData, item[2]);
+                                if (bool.Parse(item[3]))
+                                {
 
+                                    _global.dataTransfer.Add(new List<string> { item[0], item[9], timestamp });
+                                }
+                                break;
+                            }
+                        }
+                        //WriteFile("SavedList_COV.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
+                        //logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
+                        break;
+
+                    //case BacnetPropertyIds.PROP_STATUS_FLAGS:
+                    //    Event = "Állapotváltozás";
+                    //    string status_text = "";
+                    //    if (value.value != null && value.value.Count > 0)
+                    //    {
+                    //        // egyszerre kapom meg a statusflageket, így egyszerre kell visszaadnom az állapotokat
+                    //        BacnetStatusFlags status = (BacnetStatusFlags)((BacnetBitString)value.value[0].Value).ConvertToInt();
+                    //        if ((status & BacnetStatusFlags.STATUS_FLAG_FAULT) == BacnetStatusFlags.STATUS_FLAG_FAULT)
+                    //            status_text = "Hibás érték";
+                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_IN_ALARM) == BacnetStatusFlags.STATUS_FLAG_IN_ALARM)
+                    //            status_text = "Hiba";
+                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE) == BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE)
+                    //            status_text = "Használaton kívül";
+                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN) == BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN)
+                    //            status_text = "Felülbírálva";
+                    //        else
+                    //            status_text = "Valami más történt:";
+                    //    }
+                    //    if (status_text != "")
+                    //    {
+                    //        Value = status_text;
+
+                    //        Program.events.Add(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
+                    //        logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
+                    //        //WriteFile("SavedList_Event.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
+                    //    }
+                    //    break;
+
+                    default:
+                        rawData = "";
+                        break;
+                }
+            }
+            if (need_confirm)
+            {
+                sender.SimpleAckResponse(adr, BacnetConfirmedServices.SERVICE_CONFIRMED_COV_NOTIFICATION, invoke_id);
+            }
+        }
+
+        #endregion
+
+        #region format / convert
         public static string customTypeFromBacnetObjectType(BacnetObjectTypes objecttype)
         {
             switch (objecttype)
@@ -321,10 +391,11 @@ namespace Visu_dataviewer
                     correctValue = Convert.ToInt32(double.Parse(value)).ToString();
                     break;
                 case "uint":
-                    correctValue = value[0] == '-' ? "0" : Convert.ToUInt32(double.Parse(value)).ToString();
+                    //correctValue = value[0] == '-' ? "0" : Convert.ToUInt32(double.Parse(value)).ToString();
+                    correctValue = Convert.ToUInt32(double.Parse(value)).ToString();
                     break;
                 case "float":
-                    correctValue = Convert.ToDouble(double.Parse(value)).ToString();
+                    correctValue = Math.Round(double.Parse(value),3).ToString();
                     break;
                 case "binary":
                     correctValue = Convert.ToBoolean(double.Parse(value)).ToString();
@@ -334,172 +405,7 @@ namespace Visu_dataviewer
             return correctValue;
         }
 
-        public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress adr, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId monitoredObjectIdentifier, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
-        {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var ip = convertToIP(adr);
-            var devInst = initiatingDeviceIdentifier.Instance;
-            var objInstance = monitoredObjectIdentifier.Instance;
-            var objType = customTypeFromBacnetObjectType(monitoredObjectIdentifier.Type);
-            var remainingTime = timeRemaining;
-            
+        #endregion
 
-            foreach (BacnetPropertyValue value in values)
-            {
-
-                switch ((BacnetPropertyIds)value.property.propertyIdentifier)
-                {
-                    case BacnetPropertyIds.PROP_PRESENT_VALUE:
-                        var Value = value.value[0].ToString();
-
-                        foreach (var item in _global.bigDatapointTable)
-                        {
-                            if (
-                                (item[5] == ip) &
-                                (item[6] == devInst.ToString()) &
-                                (item[7] == objType) &
-                                (item[8] == objInstance.ToString())
-                                )
-                            {
-                                item[9] = formatValue(Value, item[2]);
-                                if (bool.Parse(item[3]))
-                                {
-                                    
-                                    _global.dataTransfer.Add(new List<string> { item[0], item[9], timestamp });
-                                }
-                                break;
-                            }
-                        }
-                        //WriteFile("SavedList_COV.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
-                        //logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-                        break;
-
-                    //case BacnetPropertyIds.PROP_STATUS_FLAGS:
-                    //    Event = "Állapotváltozás";
-                    //    string status_text = "";
-                    //    if (value.value != null && value.value.Count > 0)
-                    //    {
-                    //        // egyszerre kapom meg a statusflageket, így egyszerre kell visszaadnom az állapotokat
-                    //        BacnetStatusFlags status = (BacnetStatusFlags)((BacnetBitString)value.value[0].Value).ConvertToInt();
-                    //        if ((status & BacnetStatusFlags.STATUS_FLAG_FAULT) == BacnetStatusFlags.STATUS_FLAG_FAULT)
-                    //            status_text = "Hibás érték";
-                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_IN_ALARM) == BacnetStatusFlags.STATUS_FLAG_IN_ALARM)
-                    //            status_text = "Hiba";
-                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE) == BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE)
-                    //            status_text = "Használaton kívül";
-                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN) == BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN)
-                    //            status_text = "Felülbírálva";
-                    //        else
-                    //            status_text = "Valami más történt:";
-                    //    }
-                    //    if (status_text != "")
-                    //    {
-                    //        Value = status_text;
-
-                    //        Program.events.Add(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-                    //        logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-                    //        //WriteFile("SavedList_Event.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
-                    //    }
-                    //    break;
-
-                    default:
-                        Value = "";
-                        break;
-                }
-            }
-            if (need_confirm)
-            {
-                sender.SimpleAckResponse(adr, BacnetConfirmedServices.SERVICE_CONFIRMED_COV_NOTIFICATION, invoke_id);
-            }
-        }
-
-        public static bool writeValue(ushort networkNumber, string deviceIP, string deviceInstance, string objectType, uint objectInstance, int valueToBeWritten)
-        {
-            bool ret;
-            bacnet_client.WritePriority = 8;
-            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten) };
-            //BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(Convert.ToSingle(valueToBeWritten)) };
-
-
-            switch (objectType.Substring(0, 1))
-            {
-                case "A":
-                    bacnetValueToBeWritten[0].Value = Convert.ToSingle(bacnetValueToBeWritten[0].Value);
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL;
-                    break;
-                case "B":
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED;
-                    break;
-
-                case "M":
-                    bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT;
-                    break;
-                default:
-                    string asd = objectType.Substring(1, 1);
-                    break;
-            }
-
-            try
-            {
-                ret = bacnet_client.WritePropertyRequest(
-                    bacnetDevice(deviceIP, networkNumber),
-                    bacnetNode(objectType, objectInstance),
-                    BacnetPropertyIds.PROP_PRESENT_VALUE,
-                    bacnetValueToBeWritten);
-                return ret;
-            }
-            catch (Exception e)
-            {
-                string read = "Error from device: ERROR_CLASS_PROPERTY - ERROR_CODE_WRITE_ACCESS_DENIED";
-
-                if (e.Message == read)
-                {
-                    MessageBox.Show("Ez az adatpont nem írható");
-                }
-                else
-                {
-                    MessageBox.Show(e.Message);
-                }
-                return false;
-            }
-        }
-
-        public static bool resetValue(ushort networkNumber, string deviceIP, string deviceInstance, string objectType, uint objectInstance)
-        {
-            bool ret;
-            bacnet_client.WritePriority = 8;
-            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(null) };
-            //BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(Convert.ToSingle(valueToBeWritten)) };
-
-
-            switch (objectType.Substring(0, 1))
-            {
-                case "A":
-                    bacnetValueToBeWritten[0].Value = Convert.ToSingle(bacnetValueToBeWritten[0].Value);
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL;
-                    break;
-                case "B":
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED;
-                    break;
-
-                case "M":
-                    bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT;
-                    break;
-                default:
-                    string asd = objectType.Substring(1, 1);
-                    break;
-
-            }
-
-            ret = bacnet_client.WritePropertyRequest(
-                bacnetDevice(deviceIP, networkNumber),
-                bacnetNode(objectType, objectInstance),
-                BacnetPropertyIds.PROP_PRESENT_VALUE,
-                bacnetValueToBeWritten);
-            return ret;
-
-        }
     }
 }

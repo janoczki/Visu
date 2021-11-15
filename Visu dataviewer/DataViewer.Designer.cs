@@ -85,7 +85,7 @@
             // 
             this.megnyitásToolStripMenuItem.Name = "megnyitásToolStripMenuItem";
             this.megnyitásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.megnyitásToolStripMenuItem.Text = "Open";
             this.megnyitásToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
@@ -93,14 +93,14 @@
             // 
             this.bezárásToolStripMenuItem.Name = "bezárásToolStripMenuItem";
             this.bezárásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
-            this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.bezárásToolStripMenuItem.Text = "Quit";
             this.bezárásToolStripMenuItem.Click += new System.EventHandler(this.QuitToolStripMenuItem_Click);
             // 
             // sqlConnectToolStripMenuItem
             // 
             this.sqlConnectToolStripMenuItem.Name = "sqlConnectToolStripMenuItem";
-            this.sqlConnectToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sqlConnectToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.sqlConnectToolStripMenuItem.Text = "Sql connect";
             this.sqlConnectToolStripMenuItem.Click += new System.EventHandler(this.sqlConnectToolStripMenuItem_Click);
             // 
@@ -198,7 +198,7 @@
         private System.Windows.Forms.ToolStripMenuItem fájlToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem megnyitásToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem bezárásToolStripMenuItem;
-        private System.Windows.Forms.Timer UItimer;
+        public System.Windows.Forms.Timer UItimer;
         private System.Windows.Forms.Timer covSubscriptionTimer;
         private System.Windows.Forms.Button pollingButton;
         private System.Windows.Forms.TextBox pollingIntervalTextbox;
