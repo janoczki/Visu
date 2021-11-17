@@ -43,6 +43,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.subscribeButton = new System.Windows.Forms.Button();
             this.listView1 = new Visu_dataviewer.ListViewNF();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.menu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -165,11 +167,32 @@
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseDoubleClick);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(344, 518);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(96, 23);
+            this.button1.TabIndex = 7;
+            this.button1.Text = "timeprogram read";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(446, 518);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(102, 23);
+            this.button2.TabIndex = 8;
+            this.button2.Text = "timeprogram write";
+            this.button2.UseVisualStyleBackColor = true;
+            // 
             // DataViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1152, 611);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.subscribeButton);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pollingIntervalTextbox);
@@ -205,6 +228,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button subscribeButton;
         private System.Windows.Forms.ToolStripMenuItem sqlConnectToolStripMenuItem;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
     }
 }
 

@@ -8,6 +8,7 @@ using System.IO.BACnet;
 using System.Windows.Forms;
 using System.ComponentModel;
 using System.Timers;
+using System.IO.BACnet.Serialize;
 
 namespace Visu_dataviewer
 {
@@ -31,6 +32,9 @@ namespace Visu_dataviewer
                     break;
                 case "Name":
                     result = BacnetPropertyIds.PROP_OBJECT_NAME;
+                    break;
+                case "Weekly":
+                    result = BacnetPropertyIds.PROP_WEEKLY_SCHEDULE;
                     break;
                 default:
                     result = BacnetPropertyIds.PROP_PRESENT_VALUE;
@@ -74,6 +78,9 @@ namespace Visu_dataviewer
                 case "DEV":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_DEVICE;
                     break;
+                case "SC":
+                    bacnetobj.type = BacnetObjectTypes.OBJECT_SCHEDULE;
+                    break;
             }
 
             bacnetobj.Instance = instance;
@@ -106,36 +113,95 @@ namespace Visu_dataviewer
 
         #region read
 
-        public static string readValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
+        public static List<List<string>> parseWeeklySchedule(byte[] schedule)
         {
-            BacnetValue Value;
-            IList<BacnetValue> NoScalarValue;
 
-            bacnet_client.ReadPropertyRequest(
-                bacnetDevice(deviceIP, networkNumber),
-                bacnetNode(objectType, objectInstance),
-                getPropertyId(property),
-                out NoScalarValue);
+            var day = new List<List<string>>();
+            var offset = 0;
 
-
-            Value = NoScalarValue[0];
-
-            if (deviceIP == "192.168.16.156" &&
-    deviceInstance == 156 &&
-    objectType == "BO" &&
-    objectInstance == 0 &&
-    Value.Value.ToString() != "0")
+            for (int i = 0; i < schedule.Length; i++)
             {
-                var asd = property;
+                if ((i + offset) < schedule.Length & (!isTheEndOfSchedule(schedule[i + offset])))
+                {
+                    if (schedule[i + offset].ToString() == "14")
+                    {
+                        var dayEvents = new List<string>();
+
+
+                        while (true)
+                        {
+                            if (schedule[i + offset].ToString() == "15")
+                            {
+                                dayEvents.Add(schedule[i + offset].ToString());
+                                break;
+                            }
+                            dayEvents.Add(schedule[i + offset].ToString());
+                            offset++;
+                        }
+                        day.Add(dayEvents);
+                    }
+                }
+                else
+                { break; }
             }
 
-            return Value.Value.ToString();
 
-            //}
-            //catch (Exception ex)
-            //{
-            //    return ex.ToString();
-            //}
+            //var vege = string.Join(Environment.NewLine, day);
+
+
+
+            return day;
+        }
+
+
+        public static string parseBacnetValue(IList<BacnetValue> NoScalarValue)
+        {
+            
+            BacnetValue Value;
+            Value = NoScalarValue[0];
+            return Value.Value.ToString();
+        }
+
+        public static bool isTheBeginOfSchedule(byte b)
+        {
+                return b.ToString() == "62" ? true : false;
+        }
+
+        public static bool isTheEndOfSchedule(byte b)
+        {
+            return b.ToString() == "63" ? true : false;
+        }
+
+        public static string readValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
+        {
+            var dev = bacnetDevice(deviceIP, networkNumber);
+            var node = bacnetNode(objectType, objectInstance);
+            var id = getPropertyId(property);
+
+                switch (property)
+                {
+                    case "PV":
+                    //BacnetValue Value;
+                    IList<BacnetValue> NoScalarValue;
+                    bacnet_client.ReadPropertyRequest(dev, node, id, out NoScalarValue);
+
+                    var asd = parseBacnetValue(NoScalarValue);
+                    return asd;
+
+                    //Value = NoScalarValue[0];
+                    //return Value.Value.ToString();
+
+                    case "Weekly":
+                    byte[] InOutBuffer = null;
+
+                    bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(dev, node, id, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY,  ref InOutBuffer);
+
+                    var fgh = parseWeeklySchedule(InOutBuffer);
+                    return fgh.ToString();
+
+                    default:
+                        return "";
+                }
         }
 
         public static void poll()
@@ -408,4 +474,9 @@ namespace Visu_dataviewer
         #endregion
 
     }
+
+    //class asd : BaCSharpObject
+    //{
+
+    //}
 }
