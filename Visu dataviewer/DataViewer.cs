@@ -202,6 +202,11 @@ namespace Visu_dataviewer
             var asd = Bac.readValue(1, "192.168.16.156", 156, "SC", 0, "Weekly");
             Console.WriteLine(asd);
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Bac.writeSchedule(1, "192.168.16.156", 156, "SC", 0, "Weekly");
+        }
     }
 
     class ListViewNF : System.Windows.Forms.ListView

@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.ComponentModel;
 using System.Timers;
 using System.IO.BACnet.Serialize;
+using System.Globalization;
 
 namespace Visu_dataviewer
 {
@@ -113,63 +114,96 @@ namespace Visu_dataviewer
 
         #region read
 
+
+
         public static List<List<string>> parseWeeklySchedule(byte[] schedule)
         {
+            var preParsed = preParseWeeklySchedule(schedule);
+            var parsed = new List<List<string>>();
 
-            var day = new List<List<string>>();
-            var offset = 0;
-
-            for (int i = 0; i < schedule.Length; i++)
+            foreach (var day in preParsed)
             {
-                if ((i + offset) < schedule.Length & (!isTheEndOfSchedule(schedule[i + offset])))
+                var preDayEvent = new List<string>();
+                var preDayEventString = "";
+                preDayEventString = String.Join(" ", day);
+
+                var realEvent = preDayEventString.Split(new string[] { " 180 " }, StringSplitOptions.None);
+
+                preDayEvent = realEvent.ToList();
+                preDayEvent.RemoveAt(0);
+
+                var dayEvent = new List<string>();
+                foreach (var eventProperty in preDayEvent)
                 {
-                    if (schedule[i + offset].ToString() == "14")
-                    {
-                        var dayEvents = new List<string>();
-
-
-                        while (true)
-                        {
-                            if (schedule[i + offset].ToString() == "15")
-                            {
-                                dayEvents.Add(schedule[i + offset].ToString());
-                                break;
-                            }
-                            dayEvents.Add(schedule[i + offset].ToString());
-                            offset++;
-                        }
-                        day.Add(dayEvents);
-                    }
+                    var prop = eventProperty.Split(' ');
+                    var timeAndCommand = prop[0] + ":" + prop[1] + ":" + prop[2] + ":" + prop[3] + ":" + prop[5];
+                    dayEvent.Add(timeAndCommand);
                 }
-                else
-                { break; }
+                parsed.Add(dayEvent);
             }
-
-
-            //var vege = string.Join(Environment.NewLine, day);
-
-
-
-            return day;
+            return parsed;
         }
 
+        public static List<List<string>> preParseWeeklySchedule(byte[] schedule)
+        {
+            var day = new List<List<string>>();
+            var counter = 0;
+            do
+            {
+                if (schedule[counter].ToString() == "14")
+                {
+                    var dayEvents = new List<string>();
 
+                    var dayEventCounter = 0;
+                    while (counter + dayEventCounter < schedule.Length)
+                    {
+                        if (dayEventCounter % 7 == 1 & schedule[counter + dayEventCounter].ToString() == "15")
+                        {
+                            break;
+                        }
+                        dayEvents.Add(schedule[counter + dayEventCounter].ToString());
+                        dayEventCounter++;
+                    }
+                    counter += dayEventCounter;
+                    day.Add(dayEvents);
+                }
+                counter++;
+            } while (schedule[counter].ToString() != "63");
+            return day;
+        }
+ 
         public static string parseBacnetValue(IList<BacnetValue> NoScalarValue)
         {
-            
             BacnetValue Value;
             Value = NoScalarValue[0];
             return Value.Value.ToString();
         }
 
-        public static bool isTheBeginOfSchedule(byte b)
+        public static void writeSchedule(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
         {
-                return b.ToString() == "62" ? true : false;
-        }
+            var dev = bacnetDevice(deviceIP, networkNumber);
+            var node = bacnetNode(objectType, objectInstance);
+            var id = getPropertyId(property);
 
-        public static bool isTheEndOfSchedule(byte b)
-        {
-            return b.ToString() == "63" ? true : false;
+            var InOutBuffer = new byte[] {
+                62,
+                14,15, //hétfő
+                14,180,2,2,2,2,145,0,15, //kedd
+                14,180,3,3,3,3,145,0,180,3,3,3,4,145,1,15, //szerda
+                14,180,4,4,4,4,145,0,15, //csütörtök
+                14,180,5,5,5,5,145,0,15, //péntek
+                14,180,6,6,6,6,145,0,15, //szombat
+                14,180,7,7,7,7,145,0,15, //vasárnap
+                63 };
+
+            bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(dev, node, id, BacnetConfirmedServices.SERVICE_CONFIRMED_WRITE_PROPERTY, ref InOutBuffer);
+
+
+            //bacnet_client.WritePropertyRequest(
+            //    dev,
+            //    node,
+            //    id,
+            //    NoScalarValue);
         }
 
         public static string readValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
@@ -181,23 +215,20 @@ namespace Visu_dataviewer
                 switch (property)
                 {
                     case "PV":
-                    //BacnetValue Value;
                     IList<BacnetValue> NoScalarValue;
                     bacnet_client.ReadPropertyRequest(dev, node, id, out NoScalarValue);
 
-                    var asd = parseBacnetValue(NoScalarValue);
-                    return asd;
-
-                    //Value = NoScalarValue[0];
-                    //return Value.Value.ToString();
+                    var presentValue = parseBacnetValue(NoScalarValue);
+                    return presentValue;
 
                     case "Weekly":
                     byte[] InOutBuffer = null;
 
                     bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(dev, node, id, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY,  ref InOutBuffer);
 
-                    var fgh = parseWeeklySchedule(InOutBuffer);
-                    return fgh.ToString();
+                    var weeklySchedule = parseWeeklySchedule(InOutBuffer);
+
+                    return weeklySchedule.ToString();
 
                     default:
                         return "";
