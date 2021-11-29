@@ -40,7 +40,7 @@ namespace Visu_dataviewer
                 }
                 catch (FileNotFoundException)
                 {
-                    MessageBox.Show("A megadott projektben nem található a Bacnet IP adatpontokat definiáló fájl");
+                    MessageBox.Show("The file defining Bacnet IP objects doesn't exist.");
                 }
             }
             return null;
@@ -92,8 +92,11 @@ namespace Visu_dataviewer
             foreach (string item in file)
             {
                 var itemProperty = item.Split(';').ToList();
-                itemProperty.Add("");
-                itemProperty.Add("");
+                itemProperty.Add(""); // value
+                itemProperty.Add(""); // active text
+                itemProperty.Add(""); // inactive text
+                itemProperty.Add(""); // multistate statuses
+                itemProperty.Add(""); // availability
                 _global.bigDatapointTable.Add(itemProperty);
                 var itemPropertyArray = itemProperty.ToArray();
                 listView1.Items.Add(new ListViewItem(itemPropertyArray));
@@ -101,8 +104,9 @@ namespace Visu_dataviewer
 
             Sql.connect();
             Bac.startActivity("192.168.16.57");
+            Bac.changeAvailability(Bac.availableDevices(Bac.collectDevices()));
             Bac.subscribe();
-
+            Bac.readStates();
 
             UItimer.Enabled = true;
         }
@@ -127,7 +131,7 @@ namespace Visu_dataviewer
         {
             foreach (var item in _global.bigDatapointTable)
             {
-                listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[9].Text = item[9];
+                listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.property.value].Text = item[(int)_global.property.value];
             }
         }
 
@@ -178,16 +182,16 @@ namespace Visu_dataviewer
                 edit = new ReaderWriter();
             }
             edit.selected = listView1.SelectedItems[0];
-            edit.nameLabel.Text = listView1.SelectedItems[0].SubItems[0].Text;
-            edit.descLabel.Text = listView1.SelectedItems[0].SubItems[1].Text;
-            edit.typeLabel.Text = listView1.SelectedItems[0].SubItems[2].Text;
-            edit.recLabel.Text = listView1.SelectedItems[0].SubItems[3].Text;
-            edit.objCovLabel.Text = listView1.SelectedItems[0].SubItems[4].Text;
-            edit.devIPLabel.Text = listView1.SelectedItems[0].SubItems[5].Text;
-            edit.devInstLabel.Text = listView1.SelectedItems[0].SubItems[6].Text;
-            edit.objTypeLabel.Text = listView1.SelectedItems[0].SubItems[7].Text;
-            edit.objInstLabel.Text = listView1.SelectedItems[0].SubItems[8].Text;
-            edit.readedValueLabel.Text = listView1.SelectedItems[0].SubItems[9].Text;
+            edit.nameLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.datapointName].Text;
+            edit.descLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.datapointDescription].Text;
+            edit.typeLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.datapointDatatype].Text;
+            edit.recLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.datapointSave].Text;
+            edit.objCovLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.datapointCOV].Text;
+            edit.devIPLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.deviceIP].Text;
+            edit.devInstLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.deviceInstance].Text;
+            edit.objTypeLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.objectType].Text;
+            edit.objInstLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.objectInstance].Text;
+            edit.readedValueLabel.Text = listView1.SelectedItems[0].SubItems[(int)_global.property.value].Text;
             edit.Show();
             
         }
@@ -206,6 +210,13 @@ namespace Visu_dataviewer
         private void button2_Click(object sender, EventArgs e)
         {
             Bac.writeSchedule(1, "192.168.16.156", 156, "SC", 0, "Weekly");
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            var sch = new ScheduleReaderWriter();
+            sch.Show();
+           
         }
     }
 

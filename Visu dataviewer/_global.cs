@@ -46,5 +46,23 @@ namespace Visu_dataviewer
             path = file[0];
             covLifetime = uint.Parse(file[1]);
         }
+
+        public enum property
+        {
+            datapointName,
+            datapointDescription,
+            datapointDatatype,
+            datapointSave,
+            datapointCOV,
+            deviceIP,
+            deviceInstance,
+            objectType,
+            objectInstance,
+            value,
+            activeText,
+            inactiveText,
+            stateText,
+            available
+        }
     }
 }
