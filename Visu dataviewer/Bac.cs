@@ -221,26 +221,31 @@ namespace Visu_dataviewer
         {
             foreach (List<string> property in _global.bigDatapointTable)
             {
-                var cov = property[4];
-                var devIP = property[5];
-                var devInst = Convert.ToUInt16(property[6]);
-                var objType = property[7];
-                var objInst = Convert.ToUInt16(property[8]);
+                var availability = bool.Parse(property[(int)_global.property.available]);
+                var cov = property[(int)_global.property.datapointCOV];
+                var devIP = property[(int)_global.property.deviceIP];
+                var devInst = Convert.ToUInt16(property[(int)_global.property.deviceInstance]);
+                var objType = property[(int)_global.property.objectType];
+                var objInst = Convert.ToUInt16(property[(int)_global.property.objectInstance]);
 
-                switch (objType)
+                if (availability)
                 {
-                    case "BI":
-                    case "BO":
-                    case "BV":
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.activeText] = Bac.readValue(1, devIP, devInst, objType, objInst, "AcTxt");
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.inactiveText] = Bac.readValue(1, devIP, devInst, objType, objInst, "IacTxt");
-                        break;
-                    case "MI":
-                    case "MO":
-                    case "MV":
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.stateText] = Bac.readValue(1, devIP, devInst, objType, objInst, "StTxt");
-                        break;
+                    switch (objType)
+                    {
+                        case "BI":
+                        case "BO":
+                        case "BV":
+                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.activeText] = Bac.readValue(1, devIP, devInst, objType, objInst, "AcTxt");
+                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.inactiveText] = Bac.readValue(1, devIP, devInst, objType, objInst, "IacTxt");
+                            break;
+                        case "MI":
+                        case "MO":
+                        case "MV":
+                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.stateText] = Bac.readValue(1, devIP, devInst, objType, objInst, "StTxt");
+                            break;
+                    }
                 }
+
             }
         }
 
@@ -250,9 +255,7 @@ namespace Visu_dataviewer
             var node = bacnetNode(objectType, objectInstance);
             var id = getPropertyId(property);
 
-            
             switch (property)
-
             {
                 case "PV":
                 case "AcTxt" :
@@ -263,8 +266,13 @@ namespace Visu_dataviewer
                     return Value;
 
                 case "StTxt":
+                case "St":
                     IList<BacnetValue> StatusValue;
                     bacnet_client.ReadPropertyRequest(dev, node, id, out StatusValue);
+                    if (StatusValue == null)
+                    {
+                        return null;
+                    }
                     var StTxt = string.Join(",", StatusValue);
                     return StTxt;
 
@@ -299,32 +307,33 @@ namespace Visu_dataviewer
             GC.Collect();
         }
 
-        public static List<List<string>> collectDevices()
+        public static List<string> collectDevices()
         {
-            HashSet<List<string>> deviceList = new HashSet<List<string>>();
+            List<string> deviceList = new List<string>();
             
             foreach (List<string> property in _global.bigDatapointTable)
             {
-                var devIP = property[5];
-                var devInst = property[6];
-                List<string> deviceProperty = new List<string>();
-                deviceProperty.Add(devIP);
-                deviceProperty.Add(devInst);
-                deviceList.Add(deviceProperty);
-            }
+                var devIP = property[(int)_global.property.deviceIP];
+                var devInst = property[(int)_global.property.deviceInstance];
+                var deviceParameters = devIP + "." + devInst;
 
-            return deviceList.ToList();
+                if (!deviceList.Contains(deviceParameters))
+                {
+                    deviceList.Add(deviceParameters);
+                }
+            }
+            return deviceList;
         }
 
-        public static List<string> availableDevices(List<List<string>>deviceList)
+        public static List<string> collectAvailableDevices(List<string>deviceList)
         {
             List<string> IPOfAvailableDevices = new List<string>();
-            foreach (List<string> device in deviceList)
+            foreach (string device in deviceList)
             {
-                var devIP = device[0];
-                var devInst = uint.Parse(device[1]);
+                var parameter = device.Split('.');
+                var devIP = parameter[0] + "." + parameter[1] + "." + parameter[2] + "." + parameter[3];
+                var devInst = uint.Parse(parameter[4]);
                 var result = readValue(1, devIP, devInst, "DEV", devInst, "St");
-
                 if (result != null)
                 {
                     IPOfAvailableDevices.Add(devIP);
@@ -333,21 +342,40 @@ namespace Visu_dataviewer
             return IPOfAvailableDevices;
         }
 
-        public static void changeAvailability(List<string>availableDevices)
+        public static void checkAvailability()
         {
+            var devicesInProject = collectDevices();
+            var availableDevices = collectAvailableDevices(devicesInProject);
+
             foreach (string IP in availableDevices)
             {
                 foreach (List<string> property in _global.bigDatapointTable)
                 {
-                    var cov = property[(int)_global.property.datapointCOV];
-                    var devIP = property[(int)_global.property.deviceIP];
-                    var devInst = Convert.ToUInt16(property[(int)_global.property.deviceInstance]);
-                    var objType = property[(int)_global.property.objectType];
-                    var objInst = Convert.ToUInt16(property[(int)_global.property.objectInstance]);
-                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.available] = devIP == IP ? "True" : "False";
+                    var available = property[(int)_global.property.available];
+                    if (available == "")
+                    {
+                        var cov = property[(int)_global.property.datapointCOV];
+                        var devIP = property[(int)_global.property.deviceIP];
+                        var devInst = Convert.ToUInt16(property[(int)_global.property.deviceInstance]);
+                        var objType = property[(int)_global.property.objectType];
+                        var objInst = Convert.ToUInt16(property[(int)_global.property.objectInstance]);
+                        if (devIP == "192.168.16.156")
+                        {
+
+                        }
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.available] = devIP == IP ? "True" : "";
+                    }
                 }
             }
 
+            foreach (List<string> property in _global.bigDatapointTable)
+            {
+                var available = property[(int)_global.property.available];
+                if (available == "")
+                {
+                    property[(int)_global.property.available] = "False";
+                }
+            }
         }
 
         private static void readData()
@@ -442,6 +470,10 @@ namespace Visu_dataviewer
 
             foreach (List<string> property in _global.bigDatapointTable)
             {
+                if (property[(int)_global.property.deviceIP] == "192.168.16.213")
+                {
+
+                }
                 var availability = bool.Parse(property[(int)_global.property.available]);
                 var cov = bool.Parse(property[(int)_global.property.datapointCOV]);
                 if (cov & availability)

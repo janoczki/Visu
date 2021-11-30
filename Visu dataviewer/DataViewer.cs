@@ -104,7 +104,7 @@ namespace Visu_dataviewer
 
             Sql.connect();
             Bac.startActivity("192.168.16.57");
-            Bac.changeAvailability(Bac.availableDevices(Bac.collectDevices()));
+            Bac.checkAvailability();
             Bac.subscribe();
             Bac.readStates();
 
