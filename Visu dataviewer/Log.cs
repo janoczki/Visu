@@ -17,7 +17,7 @@ namespace Visu_dataviewer
 
             //var actualLog = @"c:\Visu\Logs\" + _global.now + ".txt";
             var actualLog = Path.Combine(@"c:\Visu\Logs\", _global.now + ".txt");
-            File.AppendAllText(actualLog, DateTime.Now.ToString("yyyy.MM.dd hh:mm:ss.fff") + ": " + message + Environment.NewLine);
+            File.AppendAllText(actualLog, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss.fff") + ": " + message + Environment.NewLine);
 
         }
     }

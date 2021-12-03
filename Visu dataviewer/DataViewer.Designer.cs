@@ -42,10 +42,10 @@
             this.pollingIntervalTextbox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.subscribeButton = new System.Windows.Forms.Button();
-            this.listView1 = new Visu_dataviewer.ListViewNF();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
+            this.listView1 = new Visu_dataviewer.ListViewNF();
             this.menu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -69,7 +69,7 @@
             this.fájlToolStripMenuItem});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
-            this.menu.Size = new System.Drawing.Size(1152, 24);
+            this.menu.Size = new System.Drawing.Size(1912, 24);
             this.menu.TabIndex = 2;
             this.menu.Text = "menuStrip1";
             // 
@@ -109,7 +109,7 @@
             // 
             // UItimer
             // 
-            this.UItimer.Interval = 50;
+            this.UItimer.Interval = 200;
             this.UItimer.Tick += new System.EventHandler(this.UITimer_Tick);
             // 
             // covSubscriptionTimer
@@ -157,17 +157,6 @@
             this.subscribeButton.UseVisualStyleBackColor = true;
             this.subscribeButton.Click += new System.EventHandler(this.subscribeButton_Click);
             // 
-            // listView1
-            // 
-            this.listView1.FullRowSelect = true;
-            this.listView1.Location = new System.Drawing.Point(12, 27);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1128, 475);
-            this.listView1.TabIndex = 0;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
-            this.listView1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseDoubleClick);
-            // 
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(344, 518);
@@ -198,11 +187,22 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
+            // listView1
+            // 
+            this.listView1.FullRowSelect = true;
+            this.listView1.Location = new System.Drawing.Point(12, 27);
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(1888, 475);
+            this.listView1.TabIndex = 0;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.View = System.Windows.Forms.View.Details;
+            this.listView1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseDoubleClick);
+            // 
             // DataViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1152, 611);
+            this.ClientSize = new System.Drawing.Size(1912, 630);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
@@ -213,7 +213,9 @@
             this.Controls.Add(this.onlineButton);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.menu);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.MainMenuStrip = this.menu;
+            this.MaximizeBox = false;
             this.Name = "DataViewer";
             this.Text = "DataViewer";
             this.Load += new System.EventHandler(this.DataViewer_Load);
@@ -225,9 +227,6 @@
         }
 
         #endregion
-
-        //private System.Windows.Forms.ListView listView1;
-        private ListViewNF listView1;
         private System.Windows.Forms.Button onlineButton;
         private System.Windows.Forms.Timer pollingTimer;
         private System.Windows.Forms.MenuStrip menu;
@@ -244,6 +243,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
+        public ListViewNF listView1;
     }
 }
 

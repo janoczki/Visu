@@ -17,11 +17,11 @@ namespace Visu_dataviewer
         
         public static string config;
         public static List<List<string>> dataTransfer;
-
+        public static int cycleCounter = 1;
         static _global()
         {
             bigDatapointTable = new List<List<string>>();
-            now = DateTime.Now.ToString("yyyy.MM.dd hh.mm.ss");
+            now = DateTime.Now.ToString("yyyy.MM.dd HH.mm.ss");
             dataTransfer = new List<List<string>>();
 
             var dataTransferTimer = new Timer();
@@ -47,7 +47,7 @@ namespace Visu_dataviewer
             covLifetime = uint.Parse(file[1]);
         }
 
-        public enum property
+        public enum prop
         {
             datapointName,
             datapointDescription,
@@ -62,7 +62,20 @@ namespace Visu_dataviewer
             activeText,
             inactiveText,
             stateText,
-            available
+            available,
+            dayMo,
+            dayTu,
+            dayWe,
+            dayTh,
+            dayFr,
+            daySa,
+            daySu
+        }
+
+        public static string normalizeNumber(string number, int len)
+        {
+            var ret = new string('0', len - number.Length) + number;
+            return ret;
         }
     }
 }

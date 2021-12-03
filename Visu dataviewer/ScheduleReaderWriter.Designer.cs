@@ -1,4 +1,6 @@
-﻿namespace Visu_dataviewer
+﻿using System.Windows.Forms;
+
+namespace Visu_dataviewer
 {
     partial class ScheduleReaderWriter
     {
@@ -36,30 +38,41 @@
             this.checkBox6 = new System.Windows.Forms.CheckBox();
             this.checkBox7 = new System.Windows.Forms.CheckBox();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.listView1 = new System.Windows.Forms.ListView();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
-            this.comboBox3 = new System.Windows.Forms.ComboBox();
-            this.comboBox4 = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.comboBox4 = new System.Windows.Forms.ComboBox();
+            this.comboBox3 = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.comboBox5 = new System.Windows.Forms.ComboBox();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.Time = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Action1 = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.Action2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Mo = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Tu = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.We = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Th = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Fr = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Sa = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Su = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.groupBox3.SuspendLayout();
             this.groupBox5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // checkBox1
@@ -148,14 +161,6 @@
             this.comboBox1.TabIndex = 8;
             this.comboBox1.Text = "All";
             // 
-            // listView1
-            // 
-            this.listView1.Location = new System.Drawing.Point(12, 19);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(240, 246);
-            this.listView1.TabIndex = 9;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            // 
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(270, 126);
@@ -212,32 +217,14 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Time";
             // 
-            // label2
+            // label4
             // 
-            this.label2.Location = new System.Drawing.Point(16, 59);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(47, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Hour";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // comboBox2
-            // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(72, 30);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(47, 21);
-            this.comboBox2.TabIndex = 20;
-            this.comboBox2.Text = "All";
-            // 
-            // comboBox3
-            // 
-            this.comboBox3.FormattingEnabled = true;
-            this.comboBox3.Location = new System.Drawing.Point(125, 30);
-            this.comboBox3.Name = "comboBox3";
-            this.comboBox3.Size = new System.Drawing.Size(47, 21);
-            this.comboBox3.TabIndex = 18;
-            this.comboBox3.Text = "All";
+            this.label4.Location = new System.Drawing.Point(175, 59);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(47, 13);
+            this.label4.TabIndex = 18;
+            this.label4.Text = "Hund";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // comboBox4
             // 
@@ -248,14 +235,14 @@
             this.comboBox4.TabIndex = 18;
             this.comboBox4.Text = "All";
             // 
-            // label1
+            // comboBox3
             // 
-            this.label1.Location = new System.Drawing.Point(72, 59);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(47, 13);
-            this.label1.TabIndex = 21;
-            this.label1.Text = "Min";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.comboBox3.FormattingEnabled = true;
+            this.comboBox3.Location = new System.Drawing.Point(125, 30);
+            this.comboBox3.Name = "comboBox3";
+            this.comboBox3.Size = new System.Drawing.Size(47, 21);
+            this.comboBox3.TabIndex = 18;
+            this.comboBox3.Text = "All";
             // 
             // label3
             // 
@@ -266,14 +253,58 @@
             this.label3.Text = "Sec";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label4
+            // comboBox2
             // 
-            this.label4.Location = new System.Drawing.Point(175, 59);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(47, 13);
-            this.label4.TabIndex = 18;
-            this.label4.Text = "Hund";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.comboBox2.FormattingEnabled = true;
+            this.comboBox2.Location = new System.Drawing.Point(72, 30);
+            this.comboBox2.Name = "comboBox2";
+            this.comboBox2.Size = new System.Drawing.Size(47, 21);
+            this.comboBox2.TabIndex = 20;
+            this.comboBox2.Text = "All";
+            // 
+            // label1
+            // 
+            this.label1.Location = new System.Drawing.Point(72, 59);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(47, 13);
+            this.label1.TabIndex = 21;
+            this.label1.Text = "Min";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label2
+            // 
+            this.label2.Location = new System.Drawing.Point(16, 59);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(47, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Hour";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.comboBox5);
+            this.groupBox4.Controls.Add(this.numericUpDown1);
+            this.groupBox4.Location = new System.Drawing.Point(6, 200);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(240, 65);
+            this.groupBox4.TabIndex = 16;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Day";
+            // 
+            // comboBox5
+            // 
+            this.comboBox5.FormattingEnabled = true;
+            this.comboBox5.Location = new System.Drawing.Point(19, 30);
+            this.comboBox5.Name = "comboBox5";
+            this.comboBox5.Size = new System.Drawing.Size(96, 21);
+            this.comboBox5.TabIndex = 16;
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Location = new System.Drawing.Point(129, 30);
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(96, 20);
+            this.numericUpDown1.TabIndex = 17;
             // 
             // groupBox3
             // 
@@ -291,47 +322,101 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Day";
             // 
-            // comboBox5
-            // 
-            this.comboBox5.FormattingEnabled = true;
-            this.comboBox5.Location = new System.Drawing.Point(19, 30);
-            this.comboBox5.Name = "comboBox5";
-            this.comboBox5.Size = new System.Drawing.Size(96, 21);
-            this.comboBox5.TabIndex = 16;
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(129, 30);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(96, 20);
-            this.numericUpDown1.TabIndex = 17;
-            // 
-            // groupBox4
-            // 
-            this.groupBox4.Controls.Add(this.comboBox5);
-            this.groupBox4.Controls.Add(this.numericUpDown1);
-            this.groupBox4.Location = new System.Drawing.Point(6, 200);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(240, 65);
-            this.groupBox4.TabIndex = 16;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Day";
-            // 
             // groupBox5
             // 
-            this.groupBox5.Controls.Add(this.listView1);
+            this.groupBox5.Controls.Add(this.dataGridView1);
             this.groupBox5.Location = new System.Drawing.Point(351, 12);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(252, 271);
+            this.groupBox5.Size = new System.Drawing.Size(497, 271);
             this.groupBox5.TabIndex = 14;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Schedule list";
+            // 
+            // dataGridView1
+            // 
+            this.dataGridView1.AllowUserToAddRows = false;
+            this.dataGridView1.AllowUserToDeleteRows = false;
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Time,
+            this.Action1,
+            this.Action2,
+            this.Mo,
+            this.Tu,
+            this.We,
+            this.Th,
+            this.Fr,
+            this.Sa,
+            this.Su});
+            this.dataGridView1.Location = new System.Drawing.Point(7, 19);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.Size = new System.Drawing.Size(490, 218);
+            this.dataGridView1.TabIndex = 0;
+            this.dataGridView1.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView1_DataError);
+            // 
+            // Time
+            // 
+            this.Time.HeaderText = "Time";
+            this.Time.Name = "Time";
+            this.Time.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            // 
+            // Action1
+            // 
+            this.Action1.HeaderText = "Action";
+            this.Action1.Name = "Action1";
+            // 
+            // Action2
+            // 
+            this.Action2.HeaderText = "Action";
+            this.Action2.Name = "Action2";
+            // 
+            // Mo
+            // 
+            this.Mo.HeaderText = "Mo";
+            this.Mo.Name = "Mo";
+            this.Mo.Width = 30;
+            // 
+            // Tu
+            // 
+            this.Tu.HeaderText = "Tu";
+            this.Tu.Name = "Tu";
+            this.Tu.Width = 30;
+            // 
+            // We
+            // 
+            this.We.HeaderText = "We";
+            this.We.Name = "We";
+            this.We.Width = 30;
+            // 
+            // Th
+            // 
+            this.Th.HeaderText = "Th";
+            this.Th.Name = "Th";
+            this.Th.Width = 30;
+            // 
+            // Fr
+            // 
+            this.Fr.HeaderText = "Fr";
+            this.Fr.Name = "Fr";
+            this.Fr.Width = 30;
+            // 
+            // Sa
+            // 
+            this.Sa.HeaderText = "Sa";
+            this.Sa.Name = "Sa";
+            this.Sa.Width = 30;
+            // 
+            // Su
+            // 
+            this.Su.HeaderText = "Su";
+            this.Su.Name = "Su";
+            this.Su.Width = 30;
             // 
             // ScheduleReaderWriter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(619, 303);
+            this.ClientSize = new System.Drawing.Size(1002, 303);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button3);
@@ -339,14 +424,16 @@
             this.Controls.Add(this.button1);
             this.Name = "ScheduleReaderWriter";
             this.Text = "ScheduleReaderWriter";
+            this.TopMost = true;
             this.Load += new System.EventHandler(this.ScheduleReaderWriter_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
-            this.groupBox4.ResumeLayout(false);
             this.groupBox5.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -361,7 +448,6 @@
         private System.Windows.Forms.CheckBox checkBox6;
         private System.Windows.Forms.CheckBox checkBox7;
         private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
@@ -379,5 +465,17 @@
         private System.Windows.Forms.ComboBox comboBox5;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.GroupBox groupBox5;
+        public System.Windows.Forms.DataGridView dataGridView1;
+        public System.Windows.Forms.DataGridViewTextBoxColumn Time;
+        public System.Windows.Forms.DataGridViewComboBoxColumn Action1;
+        public System.Windows.Forms.DataGridViewTextBoxColumn Action2;
+        public System.Windows.Forms.DataGridViewCheckBoxColumn Mo;
+        public System.Windows.Forms.DataGridViewCheckBoxColumn Tu;
+        public System.Windows.Forms.DataGridViewCheckBoxColumn We;
+        public System.Windows.Forms.DataGridViewCheckBoxColumn Th;
+        public System.Windows.Forms.DataGridViewCheckBoxColumn Fr;
+        public System.Windows.Forms.DataGridViewCheckBoxColumn Sa;
+        public System.Windows.Forms.DataGridViewCheckBoxColumn Su;
+        public ListViewItem selected;
     }
 }

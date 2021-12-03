@@ -15,7 +15,27 @@ namespace Visu_dataviewer
 {
     public class Bac
     {
+        public static bool availabilityCheckComplete = false;
+
+        #region bacnetclient
+
         public static BacnetClient bacnet_client;
+
+        public static bool startActivity(string localEndpoint)
+        {
+            try
+            {
+                bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
+                bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);
+                bacnet_client.Start();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+        }
 
         public static BacnetPropertyIds getPropertyId(string prop)
 
@@ -37,12 +57,12 @@ namespace Visu_dataviewer
                     result = BacnetPropertyIds.PROP_WEEKLY_SCHEDULE;
                     break;
                 case "Ref":
-                    result = BacnetPropertyIds.PROP_OBJECT_PROPERTY_REFERENCE;
+                    result = BacnetPropertyIds.PROP_LIST_OF_OBJECT_PROPERTY_REFERENCES;
                     break;
                 case "AcTxt":
                     result = BacnetPropertyIds.PROP_ACTIVE_TEXT;
                     break;
-                case "IAcTxt":
+                case "IacTxt":
                     result = BacnetPropertyIds.PROP_INACTIVE_TEXT;
                     break;
                 case "StTxt":
@@ -64,37 +84,52 @@ namespace Visu_dataviewer
             switch (objectType)
             {
                 case "AI":
+                case "OBJECT_ANALOG_INPUT":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_ANALOG_INPUT;
                     break;
                 case "AO":
+                case "OBJECT_ANALOG_OUTPUT":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_ANALOG_OUTPUT;
                     break;
                 case "AV":
+                case "OBJECT_ANALOG_VALUE":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_ANALOG_VALUE;
                     break;
                 case "BI":
+                case "OBJECT_BINARY_INPUT":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_BINARY_INPUT;
                     break;
                 case "BO":
+                case "OBJECT_BINARY_OUTPUT":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_BINARY_OUTPUT;
                     break;
                 case "BV":
+                case "OBJECT_BINARY_VALUE":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_BINARY_VALUE;
                     break;
                 case "MI":
+                case "OBJECT_MULTI_STATE_INPUT":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_MULTI_STATE_INPUT;
                     break;
                 case "MO":
+                case "OBJECT_MULTI_STATE_OUTPUT":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_MULTI_STATE_OUTPUT;
                     break;
                 case "MV":
+                case "OBJECT_MULTI_STATE_VALUE":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_MULTI_STATE_VALUE;
                     break;
                 case "DEV":
+                case "OBJECT_DEVICE":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_DEVICE;
                     break;
                 case "SC":
+                case "OBJECT_SCHEDULE":
                     bacnetobj.type = BacnetObjectTypes.OBJECT_SCHEDULE;
+                    break;
+                case "PIV":
+                case "OBJECT_POSITIVE_INTEGER_VALUE":
+                    bacnetobj.type = BacnetObjectTypes.OBJECT_POSITIVE_INTEGER_VALUE;
                     break;
             }
 
@@ -109,23 +144,37 @@ namespace Visu_dataviewer
             return bacnetDev;
         }
 
-        public static bool startActivity(string localEndpoint)
+        #endregion
+
+        #region schedule
+
+        public static List<List<string>> preParseWeeklySchedule(byte[] schedule)
         {
-            try
+            var day = new List<List<string>>();
+            var counter = 0;
+            do
             {
-                bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
-                bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);
-                bacnet_client.Start();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return false;
-            }
+                if (schedule[counter].ToString() == "14")
+                {
+                    var dayEvents = new List<string>();
+
+                    var dayEventCounter = 0;
+                    while (counter + dayEventCounter < schedule.Length)
+                    {
+                        if (dayEventCounter % 7 == 1 & schedule[counter + dayEventCounter].ToString() == "15")
+                        {
+                            break;
+                        }
+                        dayEvents.Add(schedule[counter + dayEventCounter].ToString());
+                        dayEventCounter++;
+                    }
+                    counter += dayEventCounter;
+                    day.Add(dayEvents);
+                }
+                counter++;
+            } while (schedule[counter].ToString() != "63");
+            return day;
         }
-        
-        #region read
 
         public static List<List<string>> parseWeeklySchedule(byte[] schedule)
         {
@@ -155,41 +204,6 @@ namespace Visu_dataviewer
             return parsed;
         }
 
-        public static List<List<string>> preParseWeeklySchedule(byte[] schedule)
-        {
-            var day = new List<List<string>>();
-            var counter = 0;
-            do
-            {
-                if (schedule[counter].ToString() == "14")
-                {
-                    var dayEvents = new List<string>();
-
-                    var dayEventCounter = 0;
-                    while (counter + dayEventCounter < schedule.Length)
-                    {
-                        if (dayEventCounter % 7 == 1 & schedule[counter + dayEventCounter].ToString() == "15")
-                        {
-                            break;
-                        }
-                        dayEvents.Add(schedule[counter + dayEventCounter].ToString());
-                        dayEventCounter++;
-                    }
-                    counter += dayEventCounter;
-                    day.Add(dayEvents);
-                }
-                counter++;
-            } while (schedule[counter].ToString() != "63");
-            return day;
-        }
- 
-        public static string parseBacnetValue(IList<BacnetValue> NoScalarValue)
-        {
-            BacnetValue Value;
-            Value = NoScalarValue[0];
-            return Value.Value.ToString();
-        }
-
         public static void writeSchedule(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
         {
             var dev = bacnetDevice(deviceIP, networkNumber);
@@ -217,75 +231,9 @@ namespace Visu_dataviewer
             //    NoScalarValue);
         }
 
-        public static void readStates()
-        {
-            foreach (List<string> property in _global.bigDatapointTable)
-            {
-                var availability = bool.Parse(property[(int)_global.property.available]);
-                var cov = property[(int)_global.property.datapointCOV];
-                var devIP = property[(int)_global.property.deviceIP];
-                var devInst = Convert.ToUInt16(property[(int)_global.property.deviceInstance]);
-                var objType = property[(int)_global.property.objectType];
-                var objInst = Convert.ToUInt16(property[(int)_global.property.objectInstance]);
+        #endregion
 
-                if (availability)
-                {
-                    switch (objType)
-                    {
-                        case "BI":
-                        case "BO":
-                        case "BV":
-                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.activeText] = Bac.readValue(1, devIP, devInst, objType, objInst, "AcTxt");
-                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.inactiveText] = Bac.readValue(1, devIP, devInst, objType, objInst, "IacTxt");
-                            break;
-                        case "MI":
-                        case "MO":
-                        case "MV":
-                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.stateText] = Bac.readValue(1, devIP, devInst, objType, objInst, "StTxt");
-                            break;
-                    }
-                }
-
-            }
-        }
-
-        public static string readValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
-        {
-            var dev = bacnetDevice(deviceIP, networkNumber);
-            var node = bacnetNode(objectType, objectInstance);
-            var id = getPropertyId(property);
-
-            switch (property)
-            {
-                case "PV":
-                case "AcTxt" :
-                case "IacTxt":
-                    IList<BacnetValue> NoScalarValue;
-                    bacnet_client.ReadPropertyRequest(dev, node, id, out NoScalarValue);
-                    var Value = parseBacnetValue(NoScalarValue);
-                    return Value;
-
-                case "StTxt":
-                case "St":
-                    IList<BacnetValue> StatusValue;
-                    bacnet_client.ReadPropertyRequest(dev, node, id, out StatusValue);
-                    if (StatusValue == null)
-                    {
-                        return null;
-                    }
-                    var StTxt = string.Join(",", StatusValue);
-                    return StTxt;
-
-                case "Weekly":
-                    byte[] InOutBuffer = null;
-                    bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(dev, node, id, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY,  ref InOutBuffer);
-                    var weeklySchedule = parseWeeklySchedule(InOutBuffer);
-                    return weeklySchedule.ToString();
-
-                default:
-                    return "";
-                }
-        }
+        #region poll
 
         public static void poll()
         {
@@ -307,14 +255,18 @@ namespace Visu_dataviewer
             GC.Collect();
         }
 
+        #endregion
+
+        #region availability
+
         public static List<string> collectDevices()
         {
             List<string> deviceList = new List<string>();
-            
+
             foreach (List<string> property in _global.bigDatapointTable)
             {
-                var devIP = property[(int)_global.property.deviceIP];
-                var devInst = property[(int)_global.property.deviceInstance];
+                var devIP = property[(int)_global.prop.deviceIP];
+                var devInst = property[(int)_global.prop.deviceInstance];
                 var deviceParameters = devIP + "." + devInst;
 
                 if (!deviceList.Contains(deviceParameters))
@@ -325,7 +277,7 @@ namespace Visu_dataviewer
             return deviceList;
         }
 
-        public static List<string> collectAvailableDevices(List<string>deviceList)
+        public static List<string> collectAvailableDevices(List<string> deviceList)
         {
             List<string> IPOfAvailableDevices = new List<string>();
             foreach (string device in deviceList)
@@ -344,6 +296,14 @@ namespace Visu_dataviewer
 
         public static void checkAvailability()
         {
+            var availabilityChecker = new BackgroundWorker();
+            availabilityChecker.DoWork += new DoWorkEventHandler(availabilityChecker_DoWork);
+            availabilityChecker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(availabilityChecker_RunWorkerCompleted);
+            availabilityChecker.RunWorkerAsync();
+        }
+
+        public static void availabilityChecker_DoWork(object sender, DoWorkEventArgs e)
+        {
             var devicesInProject = collectDevices();
             var availableDevices = collectAvailableDevices(devicesInProject);
 
@@ -351,30 +311,153 @@ namespace Visu_dataviewer
             {
                 foreach (List<string> property in _global.bigDatapointTable)
                 {
-                    var available = property[(int)_global.property.available];
+                    var available = property[(int)_global.prop.available];
                     if (available == "")
                     {
-                        var cov = property[(int)_global.property.datapointCOV];
-                        var devIP = property[(int)_global.property.deviceIP];
-                        var devInst = Convert.ToUInt16(property[(int)_global.property.deviceInstance]);
-                        var objType = property[(int)_global.property.objectType];
-                        var objInst = Convert.ToUInt16(property[(int)_global.property.objectInstance]);
+                        var cov = property[(int)_global.prop.datapointCOV];
+                        var devIP = property[(int)_global.prop.deviceIP];
+                        var devInst = Convert.ToUInt16(property[(int)_global.prop.deviceInstance]);
+                        var objType = property[(int)_global.prop.objectType];
+                        var objInst = Convert.ToUInt16(property[(int)_global.prop.objectInstance]);
                         if (devIP == "192.168.16.156")
                         {
 
                         }
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.available] = devIP == IP ? "True" : "";
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.available] = devIP == IP ? "True" : "";
                     }
                 }
             }
 
             foreach (List<string> property in _global.bigDatapointTable)
             {
-                var available = property[(int)_global.property.available];
+                var available = property[(int)_global.prop.available];
                 if (available == "")
                 {
-                    property[(int)_global.property.available] = "False";
+                    property[(int)_global.prop.available] = "False";
                 }
+            }
+            e.Result = 1;
+        }
+
+        private static void availabilityChecker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            availabilityCheckComplete = true;
+            Log.append("check availability of devices complete");
+            sender = null;
+            GC.Collect();
+        }
+
+        #endregion
+
+        #region readwrite
+
+        public static void readStates()
+        {
+            foreach (List<string> property in _global.bigDatapointTable)
+            {
+                var availability = bool.Parse(property[(int)_global.prop.available]);
+                var cov = property[(int)_global.prop.datapointCOV];
+                var devIP = property[(int)_global.prop.deviceIP];
+                var devInst = Convert.ToUInt16(property[(int)_global.prop.deviceInstance]);
+                var objType = property[(int)_global.prop.objectType];
+                var objInst = Convert.ToUInt16(property[(int)_global.prop.objectInstance]);
+
+                if (availability)
+                {
+                    switch (objType)
+                    {
+                        case "BI":
+                        case "BO":
+                        case "BV":
+                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.activeText] = Bac.readValue(1, devIP, devInst, objType, objInst, "AcTxt");
+                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.inactiveText] = Bac.readValue(1, devIP, devInst, objType, objInst, "IacTxt");
+                            break;
+                        case "MI":
+                        case "MO":
+                        case "MV":
+                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.stateText] = Bac.readValue(1, devIP, devInst, objType, objInst, "StTxt");
+                            break;
+                        case "SC":
+                            var reference = Bac.readValue(1, devIP, devInst, objType, objInst, "Ref");
+                            reference = reference.Replace(".PROP_PRESENT_VALUE", "");
+                            var refArray = reference.Split(':');
+
+                            var refObjType = refArray[0];
+                            var refObjInst = uint.Parse(refArray[1]);
+
+                            switch (refObjType)
+                            {
+                                case "OBJECT_BINARY_INPUT":
+                                case "OBJECT_BINARY_OUTPUT":
+                                case "OBJECT_BINARY_VALUE":
+                                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.activeText] = Bac.readValue(1, devIP, devInst, refObjType, refObjInst, "AcTxt");
+                                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.inactiveText] = Bac.readValue(1, devIP, devInst, refObjType, refObjInst, "IacTxt");
+                                    break;
+                                case "OBJECT_MULTI_STATE_INPUT":
+                                case "OBJECT_MULTI_STATE_OUTPUT":
+                                case "OBJECT_MULTI_STATE_VALUE":
+                                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.stateText] = Bac.readValue(1, devIP, devInst, refObjType, refObjInst, "StTxt");
+                                    break;
+                            }
+                            break;
+                    }
+                }
+
+            }
+        }
+
+        public static string readValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
+        {
+            var dev = bacnetDevice(deviceIP, networkNumber);
+            var node = bacnetNode(objectType, objectInstance);
+            var id = getPropertyId(property);
+
+            switch (property)
+            {
+                case "PV":
+                case "AcTxt":
+                case "IacTxt":
+                    IList<BacnetValue> NoScalarValue;
+                    bacnet_client.ReadPropertyRequest(dev, node, id, out NoScalarValue);
+                    var Value = parseBacnetValue(NoScalarValue);
+                    return Value;
+
+                case "StTxt":
+                case "St":
+                    IList<BacnetValue> StatusValue;
+                    bacnet_client.ReadPropertyRequest(dev, node, id, out StatusValue);
+                    if (StatusValue == null)
+                    {
+                        return null;
+                    }
+                    var StTxt = string.Join(",", StatusValue);
+                    return StTxt;
+
+                case "Weekly":
+                    var day = new string[] { "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" };
+                    byte[] InOutBuffer = null;
+                    bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(dev, node, id, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY, ref InOutBuffer);
+                    var weeklySchedule = parseWeeklySchedule(InOutBuffer);
+
+                    var eventsInString = "";
+                    var dayevent = "";
+                    var daycounter = 0;
+                    foreach (var item in weeklySchedule)
+                    {
+                        dayevent = string.Join(",",item);
+                        var separator = daycounter != 6 ? Environment.NewLine : null;
+                        eventsInString += dayevent + separator;
+                        daycounter++;
+                    }
+                    
+                    return eventsInString;
+
+                case "Ref":
+                    IList<BacnetValue> NoScalarValue1;
+                    bacnet_client.ReadPropertyRequest(dev, node, id, out NoScalarValue1);
+                    return NoScalarValue1[0].Value.ToString();
+                default:
+                    return "";
             }
         }
 
@@ -382,25 +465,41 @@ namespace Visu_dataviewer
         {
             foreach (List<string> property in _global.bigDatapointTable)
             {
-                var availability = bool.Parse(property[(int)_global.property.available]);
-                var cov = property[(int)_global.property.datapointCOV];
-                var devIP = property[(int)_global.property.deviceIP];
-                var devInst = Convert.ToUInt16(property[(int)_global.property.deviceInstance]);
-                var objType = property[(int)_global.property.objectType];
-                var objInst = Convert.ToUInt16(property[(int)_global.property.objectInstance]);
+                var availability = bool.Parse(property[(int)_global.prop.available]);
+                var cov = property[(int)_global.prop.datapointCOV];
+                var devIP = property[(int)_global.prop.deviceIP];
+                var devInst = Convert.ToUInt16(property[(int)_global.prop.deviceInstance]);
+                var objType = property[(int)_global.prop.objectType];
+                var objInst = Convert.ToUInt16(property[(int)_global.prop.objectInstance]);
 
                 if (!bool.Parse(cov) & availability)
                 {
                     var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.value] = Bac.readValue(1, devIP, devInst, objType, objInst, "PV");
+                    var propertyToBeRead = "PV";
+
+                    if (objType == "SC")
+                    {
+                        propertyToBeRead = "Weekly";
+                        var week = Bac.readValue(1, devIP, devInst, objType, objInst, propertyToBeRead);
+                        var day = week.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayMo] = day[0];
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayTu] = day[1];
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayWe] = day[2];
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayTh] = day[3];
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayFr] = day[4];
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.daySa] = day[5];
+                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.daySu] = day[6];
+                    }
+                    propertyToBeRead = "PV";
+                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.value] = Bac.readValue(1, devIP, devInst, objType, objInst, propertyToBeRead);
                     _global.dataTransfer.Add(new List<string> {
-                        property[(int)_global.property.datapointName],
-                        property[(int)_global.property.value],
+                        property[(int)_global.prop.datapointName],
+                        property[(int)_global.prop.value],
                         timestamp });
                 }
                 else if (!availability)
                 {
-                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.value] = "not available";
+                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.value] = "not available";
                 }
             }
         }
@@ -452,6 +551,13 @@ namespace Visu_dataviewer
             }
         }
 
+        public static string parseBacnetValue(IList<BacnetValue> NoScalarValue)
+        {
+            BacnetValue Value;
+            Value = NoScalarValue[0];
+            return Value.Value.ToString();
+        }
+
         #endregion
 
         #region CoV
@@ -470,18 +576,18 @@ namespace Visu_dataviewer
 
             foreach (List<string> property in _global.bigDatapointTable)
             {
-                if (property[(int)_global.property.deviceIP] == "192.168.16.213")
+                if (property[(int)_global.prop.deviceIP] == "192.168.16.213")
                 {
 
                 }
-                var availability = bool.Parse(property[(int)_global.property.available]);
-                var cov = bool.Parse(property[(int)_global.property.datapointCOV]);
+                var availability = bool.Parse(property[(int)_global.prop.available]);
+                var cov = bool.Parse(property[(int)_global.prop.datapointCOV]);
                 if (cov & availability)
                 {
-                    var devIP = property[(int)_global.property.deviceIP];
-                    var devInst = Convert.ToUInt16(property[(int)_global.property.deviceInstance]);
-                    var objType = property[(int)_global.property.objectType];
-                    var objInst = Convert.ToUInt16(property[(int)_global.property.objectInstance]);
+                    var devIP = property[(int)_global.prop.deviceIP];
+                    var devInst = Convert.ToUInt16(property[(int)_global.prop.deviceInstance]);
+                    var objType = property[(int)_global.prop.objectType];
+                    var objInst = Convert.ToUInt16(property[(int)_global.prop.objectInstance]);
                     bacnet_client.SubscribeCOVRequest(
                         bacnetDevice(devIP, 1),
                         bacnetNode(objType, objInst),
@@ -489,7 +595,7 @@ namespace Visu_dataviewer
                 }
                 else if (!availability)
                 {
-                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.property.value] = "not available";
+                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.value] = "not available";
                 }
             }
 

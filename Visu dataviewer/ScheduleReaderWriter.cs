@@ -20,5 +20,10 @@ namespace Visu_dataviewer
         private void ScheduleReaderWriter_Load(object sender, EventArgs e)
         {
         }
+
+        private void dataGridView1_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            MessageBox.Show(e.ColumnIndex.ToString() + e.RowIndex.ToString() + e.Exception);
+        }
     }
 }
