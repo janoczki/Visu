@@ -67,7 +67,6 @@ namespace Visu_dataviewer
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.readedValueLabel = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
-            this.testLabel = new System.Windows.Forms.Label();
             this.groupBox5.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -433,22 +432,11 @@ namespace Visu_dataviewer
             this.label17.TabIndex = 1;
             this.label17.Text = "Value";
             // 
-            // testLabel
-            // 
-            this.testLabel.AutoSize = true;
-            this.testLabel.Location = new System.Drawing.Point(67, 433);
-            this.testLabel.Name = "testLabel";
-            this.testLabel.Size = new System.Drawing.Size(35, 13);
-            this.testLabel.TabIndex = 24;
-            this.testLabel.Tag = "DDC156_ADAT_BO000";
-            this.testLabel.Text = "label8";
-            // 
             // ReaderWriter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(414, 468);
-            this.Controls.Add(this.testLabel);
             this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.closeButton);
             this.Controls.Add(this.groupBox6);
@@ -473,7 +461,6 @@ namespace Visu_dataviewer
             this.groupBox9.ResumeLayout(false);
             this.groupBox9.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -515,6 +502,5 @@ namespace Visu_dataviewer
         private System.Windows.Forms.Label label17;
         public ListViewItem selected;
         private Button resetButton;
-        private Label testLabel;
     }
 }

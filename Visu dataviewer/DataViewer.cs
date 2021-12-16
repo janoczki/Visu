@@ -19,41 +19,36 @@ namespace Visu_dataviewer
         // TODO logolás hibára
         // TODO adatvalidálások (adatpont fájl, config fájl, idők)
 
-
         public DataViewer()
         {
             InitializeComponent();
-            
         }
 
-        private string[] openDatapointFile()
+        private void DataViewer_Load(object sender, EventArgs e)
         {
-            Log.append("Opening datapoint file");
-            //var directory = openProjectDirectory();
-            var directory = _global.path;
-            if (directory != null)
+            _global.ini();
+            Log.Append("Application start");
+        }
+
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            addContentToListview();
+            UItimer.Enabled = true;
+        }
+
+        public void addHeaders(string[] headers)
+        {
+            foreach (string header in headers)
             {
-                //_global.path = directory;
-                try
-                {
-                    string[] file = File.ReadAllLines(_global.path + "\\datapoints.bacnetip", Encoding.Default);
-                    return file;
-                }
-                catch (FileNotFoundException)
-                {
-                    MessageBox.Show("The file defining Bacnet IP objects doesn't exist.");
-                }
+                listView1.Columns.Add(header, 1, HorizontalAlignment.Center);
             }
-            return null;
         }
 
         private string openProjectDirectory()
         {
-            
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
                 DialogResult result = folderBrowserDialog.ShowDialog();
-
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
                 {
                     return folderBrowserDialog.SelectedPath;
@@ -62,10 +57,47 @@ namespace Visu_dataviewer
             return null;
         }
 
+        public void addContentToListview()
+        {
+            var datapointTable = DatapointDefinition.getTable();
+            if (datapointTable != null)
+            {
+                addHeaders(DatapointDefinition.header);
+                foreach (string row in datapointTable)
+                {
+                    var datapoint = (row + ";").Split(';');
+                    _global.bigDatapointTable.Add(datapoint.ToList());
+                    Datapoints.table.Add(datapoint.ToList());
+                    listView1.Items.Add(new ListViewItem(datapoint));
+                }
+                listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            }
+        }
+
+        private void QuitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.Append("Quit application");
+            Application.Exit();
+        }
+
+
+
+
+
+
+
+
+        private void covSubscriptionTimer_Tick(object sender, EventArgs e)
+        {
+            Log.Append("Resubscription started");
+            Bac.subscribeToAll();
+            Log.Append("Resubscription finished");
+        }
+
         private void onlineButton_Click(object sender, EventArgs e)
         {
             startBacnet();
-            Log.append("Online mode");
+            Log.Append("Online mode");
             UItimer.Enabled = true;
             pollingButton.Enabled = true;
             subscribeButton.Enabled = true;
@@ -73,6 +105,9 @@ namespace Visu_dataviewer
 
         private void subscribeButton_Click(object sender, EventArgs e)
         {
+            Bac.subscribeToAll();
+            Log.Append("Subscription started");
+            covSubscriptionTimer.Interval = Convert.ToInt32((_global.covLifetime - 1) * 1000);
             covSubscriptionTimer.Enabled = true;
         }
 
@@ -83,158 +118,16 @@ namespace Visu_dataviewer
 
         private void pollingTimer_Tick(object sender, EventArgs e)
         {
-            Log.append("Polling timer tick");
-            Bac.poll();
-        }
-
-        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var file = openDatapointFile();
-            foreach (string item in file)
-            {
-                var itemProperty = item.Split(';').ToList();
-                itemProperty.Add(""); // value
-                itemProperty.Add(""); // active text
-                itemProperty.Add(""); // inactive text
-                itemProperty.Add(""); // multistate statuses
-                itemProperty.Add(""); // availability
-
-                itemProperty.Add(""); // Monday
-                itemProperty.Add(""); // Tuesday
-                itemProperty.Add(""); // Wednesday
-                itemProperty.Add(""); // Thursday
-                itemProperty.Add(""); // Friday
-                itemProperty.Add(""); // Saturday
-                itemProperty.Add(""); // Sunday
-
-                _global.bigDatapointTable.Add(itemProperty);
-                var itemPropertyArray = itemProperty.ToArray();
-                listView1.Items.Add(new ListViewItem(itemPropertyArray));
-            }
-
-            Sql.connect();
-            Bac.startActivity("192.168.16.57");
-            Bac.checkAvailability();
-
-            while (!Bac.availabilityCheckComplete)
-            {
-                Application.DoEvents();
-            }
-            Bac.subscribe();
-            Bac.readStates();
-
-            foreach (var item in _global.bigDatapointTable)
-            {
-                listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.activeText].Text = item[(int)_global.prop.activeText];
-                listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.inactiveText].Text = item[(int)_global.prop.inactiveText];
-                listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.stateText].Text = item[(int)_global.prop.stateText];
-                listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.available].Text = item[(int)_global.prop.available];
-
-
-            }
-
-            UItimer.Enabled = true;
-
-            foreach (ColumnHeader column in listView1.Columns)
-            {
-                column.Width = -2;
-            }
-
-            for (int i = 10; i < 14; i++)
-            {
-                listView1.Columns[i].Width = 0;
-            }
-            
-
-        }
-
-        public static void correctHeaders()
-        {
-            
-        }
-        private void DataViewer_Load(object sender, EventArgs e)
-        {
-            _global.ini();
-            Log.append("Application start");
-            listView1.Columns.Add("asd", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Object name", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Object description", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Object datatype", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Save", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Change of value", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Device IP", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Device instance", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Object type", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Object instance", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Present value", -2, HorizontalAlignment.Center);
-            listView1.Columns.Add("Active text", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Inactive text", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Multistate statuses", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Availability", 0, HorizontalAlignment.Center);
-
-            listView1.Columns.Add("Monday", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Tuesday", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Wednesday", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Thursday", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Friday", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Saturday", 0, HorizontalAlignment.Center);
-            listView1.Columns.Add("Sunday", 0, HorizontalAlignment.Center);
-
-            listView1.Columns.RemoveAt(0);
-            //itemProperty.Add(""); // value
-            //itemProperty.Add(""); // active text
-            //itemProperty.Add(""); // inactive text
-            //itemProperty.Add(""); // multistate statuses
-            //itemProperty.Add(""); // availability
+            Log.Append("Polling timer tick");
+            Bac.readAllValue();
         }
 
         private void UITimer_Tick(object sender, EventArgs e)
         {
-            var permission = _global.cycleCounter % 10 == 0;
-
-            foreach (var item in _global.bigDatapointTable)
+            foreach (var row in Datapoints.table)
             {
-                Application.DoEvents();
-                listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.value].Text = item[(int)_global.prop.value];
-
-
-                if (permission)
-                {
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.activeText].Text = item[(int)_global.prop.activeText];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.inactiveText].Text = item[(int)_global.prop.inactiveText];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.stateText].Text = item[(int)_global.prop.stateText];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.available].Text = item[(int)_global.prop.available];
-
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.dayMo].Text = item[(int)_global.prop.dayMo];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.dayTu].Text = item[(int)_global.prop.dayTu];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.dayWe].Text = item[(int)_global.prop.dayWe];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.dayTh].Text = item[(int)_global.prop.dayTh];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.dayFr].Text = item[(int)_global.prop.dayFr];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.daySa].Text = item[(int)_global.prop.daySa];
-                    listView1.Items[_global.bigDatapointTable.IndexOf(item)].SubItems[(int)_global.prop.daySu].Text = item[(int)_global.prop.daySu];
-                    _global.cycleCounter = 1;
-                }
-
+                listView1.Items[Datapoints.table.IndexOf(row)].SubItems[(int)DatapointDefinition.columns.value].Text = row[(int)DatapointDefinition.columns.value];
             }
-
-            _global.cycleCounter++;
-        }
-
-        private void QuitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Log.append("Quit application");
-            Application.Exit();
-        }
-
-        private void covSubscriptionTimer_Tick(object sender, EventArgs e)
-        {
-            Log.append("Subscriber timer tick");
-
-            if (covSubscriptionTimer.Interval == 100)
-            {
-                covSubscriptionTimer.Interval = Convert.ToInt32((_global.covLifetime - 1) * 1000);
-            }
-            Bac.subscribe();
         }
 
         private void pollingButton_Click(object sender, EventArgs e)
@@ -242,39 +135,39 @@ namespace Visu_dataviewer
             if (pollingButton.Text == "Start polling")
             {
                 pollingButton.Text = "Stop polling";
-                Log.append("Start polling");
+                Log.Append("Start polling");
                 pollingTimer.Interval = int.Parse(pollingIntervalTextbox.Text) * 1000;
                 pollingTimer.Enabled = true;
-                Bac.poll();
+                Bac.readAllValue();
             }
             else
             {
                 pollingButton.Text = "Start polling";
-                Log.append("Stop polling");
+                Log.Append("Stop polling");
                 pollingTimer.Enabled = false;
             }
         }
 
         private void openReaderWriter(ListViewItem selected)
         {
-            var edit = Application.OpenForms["ReaderWriter"] as ReaderWriter;
+            var readerwriter = Application.OpenForms["ReaderWriter"] as ReaderWriter;
 
-            if (edit == null)
+            if (readerwriter == null)
             {
-                edit = new ReaderWriter();
+                readerwriter = new ReaderWriter();
             }
-            edit.selected = selected;
-            edit.nameLabel.Text = selected.SubItems[(int)_global.prop.datapointName].Text;
-            edit.descLabel.Text = selected.SubItems[(int)_global.prop.datapointDescription].Text;
-            edit.typeLabel.Text = selected.SubItems[(int)_global.prop.datapointDatatype].Text;
-            edit.recLabel.Text = selected.SubItems[(int)_global.prop.datapointSave].Text;
-            edit.objCovLabel.Text = selected.SubItems[(int)_global.prop.datapointCOV].Text;
-            edit.devIPLabel.Text = selected.SubItems[(int)_global.prop.deviceIP].Text;
-            edit.devInstLabel.Text = selected.SubItems[(int)_global.prop.deviceInstance].Text;
-            edit.objTypeLabel.Text = selected.SubItems[(int)_global.prop.objectType].Text;
-            edit.objInstLabel.Text = selected.SubItems[(int)_global.prop.objectInstance].Text;
-            edit.readedValueLabel.Text = selected.SubItems[(int)_global.prop.value].Text;
-            edit.Show();
+            readerwriter.selected = selected;
+            readerwriter.nameLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointName].Text;
+            readerwriter.descLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointDescription].Text;
+            readerwriter.typeLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointDatatype].Text;
+            readerwriter.recLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointSave].Text;
+            readerwriter.objCovLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointCOV].Text;
+            readerwriter.devIPLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.deviceIP].Text;
+            readerwriter.devInstLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.deviceInstance].Text;
+            readerwriter.objTypeLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.objectType].Text;
+            readerwriter.objInstLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.objectInstance].Text;
+            readerwriter.readedValueLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.value].Text;
+            readerwriter.Show();
         }
 
         private void openScheduleReaderWriter(ListViewItem selected)
@@ -354,7 +247,6 @@ namespace Visu_dataviewer
             edit.Show();
         }
 
-
         private List<string> collectWeeklyScheduleByTimeAndCommand(List<string> week)
         {
             var timeAndCommands = new List<string>();
@@ -388,7 +280,7 @@ namespace Visu_dataviewer
         {
             var selected = listView1.SelectedItems[0];
 
-            if (selected.SubItems[(int)_global.prop.objectType].Text == "SC")
+            if (selected.SubItems[(int)DatapointDefinition.columns.objectType].Text == "SC")
             {
                 openScheduleReaderWriter(selected);
                 return;
@@ -401,44 +293,14 @@ namespace Visu_dataviewer
             Sql.connect();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var asd = Bac.readValue(1, "192.168.16.156", 156, "SC", 0, "Weekly");
-            Console.WriteLine(asd);
+
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void listView1_SelectedIndexChanged_1(object sender, EventArgs e)
         {
-            Bac.writeSchedule(1, "192.168.16.156", 156, "SC", 0, "Weekly");
-        }
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-            var sch = new ScheduleReaderWriter();
-            sch.Show();
-           
-        }
-    }
-
-    public class ListViewNF : System.Windows.Forms.ListView
-    {
-        public ListViewNF()
-        {
-            //Activate double buffering
-            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
-
-            //Enable the OnNotifyMessage event so we get a chance to filter out 
-            // Windows messages before they get to the form's WndProc
-            this.SetStyle(ControlStyles.EnableNotifyMessage, true);
-        }
-
-        protected override void OnNotifyMessage(Message m)
-        {
-            //Filter out the WM_ERASEBKGND message
-            if (m.Msg != 0x14)
-            {
-                base.OnNotifyMessage(m);
-            }
         }
     }
 }

@@ -15,10 +15,13 @@ namespace Visu_dataviewer
 {
     public class Bac
     {
+        public static string schedule = "";
+        public static bool scheduleIsInCommand;
+        public static int scheduleActualBytesToRead = 0;
+        public static bool scheduleIsInDay;
         public static bool availabilityCheckComplete = false;
-
-        #region bacnetclient
-
+        public static List<string> error = new List<string>();
+        public static Dictionary<string, BacnetObjectTypes> BacnetObject;
         public static BacnetClient bacnet_client;
 
         public static bool startActivity(string localEndpoint)
@@ -26,543 +29,373 @@ namespace Visu_dataviewer
             try
             {
                 bacnet_client = new BacnetClient(new BacnetIpUdpProtocolTransport(0xBAC0, false, false, 1472, localEndpoint));
+                bacnet_client.WritePriority = 8;
                 bacnet_client.OnCOVNotification += new BacnetClient.COVNotificationHandler(handler_OnCOVNotification);
                 bacnet_client.Start();
+                Log.Append("Bacnet started");
                 return true;
             }
             catch (Exception ex)
             {
+                Log.Append("Error when starting bacnet :" + ex.Message);
                 MessageBox.Show(ex.Message);
                 return false;
             }
         }
 
-        public static BacnetPropertyIds getPropertyId(string prop)
-
-        {
-            BacnetPropertyIds result;
-
-            switch (prop)
-            {
-                case "PV":
-                    result = BacnetPropertyIds.PROP_PRESENT_VALUE;
-                    break;
-                case "List":
-                    result = BacnetPropertyIds.PROP_OBJECT_LIST;
-                    break;
-                case "Name":
-                    result = BacnetPropertyIds.PROP_OBJECT_NAME;
-                    break;
-                case "Weekly":
-                    result = BacnetPropertyIds.PROP_WEEKLY_SCHEDULE;
-                    break;
-                case "Ref":
-                    result = BacnetPropertyIds.PROP_LIST_OF_OBJECT_PROPERTY_REFERENCES;
-                    break;
-                case "AcTxt":
-                    result = BacnetPropertyIds.PROP_ACTIVE_TEXT;
-                    break;
-                case "IacTxt":
-                    result = BacnetPropertyIds.PROP_INACTIVE_TEXT;
-                    break;
-                case "StTxt":
-                    result = BacnetPropertyIds.PROP_STATE_TEXT;
-                    break;
-                case "St":
-                    result = BacnetPropertyIds.PROP_SYSTEM_STATUS;
-                    break;
-                default:
-                    result = BacnetPropertyIds.PROP_PRESENT_VALUE;
-                    break;
-            }
-            return result;
-        }
-
-        public static BacnetObjectId bacnetNode(string objectType, uint instance)
+        public static BacnetObjectId getBacnetObject(string objectType, uint instance)
         {
             BacnetObjectId bacnetobj = new BacnetObjectId();
-            switch (objectType)
+            BacnetObject = new Dictionary<string, BacnetObjectTypes>()
             {
-                case "AI":
-                case "OBJECT_ANALOG_INPUT":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_ANALOG_INPUT;
-                    break;
-                case "AO":
-                case "OBJECT_ANALOG_OUTPUT":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_ANALOG_OUTPUT;
-                    break;
-                case "AV":
-                case "OBJECT_ANALOG_VALUE":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_ANALOG_VALUE;
-                    break;
-                case "BI":
-                case "OBJECT_BINARY_INPUT":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_BINARY_INPUT;
-                    break;
-                case "BO":
-                case "OBJECT_BINARY_OUTPUT":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_BINARY_OUTPUT;
-                    break;
-                case "BV":
-                case "OBJECT_BINARY_VALUE":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_BINARY_VALUE;
-                    break;
-                case "MI":
-                case "OBJECT_MULTI_STATE_INPUT":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_MULTI_STATE_INPUT;
-                    break;
-                case "MO":
-                case "OBJECT_MULTI_STATE_OUTPUT":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_MULTI_STATE_OUTPUT;
-                    break;
-                case "MV":
-                case "OBJECT_MULTI_STATE_VALUE":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_MULTI_STATE_VALUE;
-                    break;
-                case "DEV":
-                case "OBJECT_DEVICE":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_DEVICE;
-                    break;
-                case "SC":
-                case "OBJECT_SCHEDULE":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_SCHEDULE;
-                    break;
-                case "PIV":
-                case "OBJECT_POSITIVE_INTEGER_VALUE":
-                    bacnetobj.type = BacnetObjectTypes.OBJECT_POSITIVE_INTEGER_VALUE;
-                    break;
-            }
-
+                { "AI", BacnetObjectTypes.OBJECT_ANALOG_INPUT },            { "AO", BacnetObjectTypes.OBJECT_ANALOG_OUTPUT },       { "AV", BacnetObjectTypes.OBJECT_ANALOG_VALUE },
+                { "BI", BacnetObjectTypes.OBJECT_BINARY_INPUT },            { "BO", BacnetObjectTypes.OBJECT_BINARY_OUTPUT },       { "BV", BacnetObjectTypes.OBJECT_BINARY_VALUE },
+                { "MI", BacnetObjectTypes.OBJECT_MULTI_STATE_INPUT },       { "MO", BacnetObjectTypes.OBJECT_MULTI_STATE_OUTPUT },  { "MV", BacnetObjectTypes.OBJECT_MULTI_STATE_VALUE },
+                { "PIV", BacnetObjectTypes.OBJECT_POSITIVE_INTEGER_VALUE }, { "SC", BacnetObjectTypes.OBJECT_SCHEDULE },            { "DEV", BacnetObjectTypes.OBJECT_DEVICE }
+            };
+            BacnetObject.TryGetValue(objectType, out bacnetobj.type);
             bacnetobj.Instance = instance;
-
             return bacnetobj;
         }
 
-        public static BacnetAddress bacnetDevice(string ipAddress, ushort networkNumber)
+        public static BacnetAddress getBacnetDevice(string ipAddress, ushort networkNumber)
         {
             BacnetAddress bacnetDev = new BacnetAddress(BacnetAddressTypes.IP, ipAddress, networkNumber);
             return bacnetDev;
         }
 
-        #endregion
-
-        #region schedule
-
-        public static List<List<string>> preParseWeeklySchedule(byte[] schedule)
-        {
-            var day = new List<List<string>>();
-            var counter = 0;
-            do
-            {
-                if (schedule[counter].ToString() == "14")
-                {
-                    var dayEvents = new List<string>();
-
-                    var dayEventCounter = 0;
-                    while (counter + dayEventCounter < schedule.Length)
-                    {
-                        if (dayEventCounter % 7 == 1 & schedule[counter + dayEventCounter].ToString() == "15")
-                        {
-                            break;
-                        }
-                        dayEvents.Add(schedule[counter + dayEventCounter].ToString());
-                        dayEventCounter++;
-                    }
-                    counter += dayEventCounter;
-                    day.Add(dayEvents);
-                }
-                counter++;
-            } while (schedule[counter].ToString() != "63");
-            return day;
-        }
-
-        public static List<List<string>> parseWeeklySchedule(byte[] schedule)
-        {
-            var preParsed = preParseWeeklySchedule(schedule);
-            var parsed = new List<List<string>>();
-
-            foreach (var day in preParsed)
-            {
-                var preDayEvent = new List<string>();
-                var preDayEventString = "";
-                preDayEventString = String.Join(" ", day);
-
-                var realEvent = preDayEventString.Split(new string[] { " 180 " }, StringSplitOptions.None);
-
-                preDayEvent = realEvent.ToList();
-                preDayEvent.RemoveAt(0);
-
-                var dayEvent = new List<string>();
-                foreach (var eventProperty in preDayEvent)
-                {
-                    var prop = eventProperty.Split(' ');
-                    var timeAndCommand = prop[0] + ":" + prop[1] + ":" + prop[2] + ":" + prop[3] + ":" + prop[5];
-                    dayEvent.Add(timeAndCommand);
-                }
-                parsed.Add(dayEvent);
-            }
-            return parsed;
-        }
-
-        public static void writeSchedule(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
-        {
-            var dev = bacnetDevice(deviceIP, networkNumber);
-            var node = bacnetNode(objectType, objectInstance);
-            var id = getPropertyId(property);
-
-            var InOutBuffer = new byte[] {
-                62,
-                14,15, //hétfő
-                14,180,2,2,2,2,145,0,15, //kedd
-                14,180,3,3,3,3,145,0,180,3,3,3,4,145,1,15, //szerda
-                14,180,4,4,4,4,145,0,15, //csütörtök
-                14,180,5,5,5,5,145,0,15, //péntek
-                14,180,6,6,6,6,145,0,15, //szombat
-                14,180,7,7,7,7,145,0,15, //vasárnap
-                63 };
-
-            bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(dev, node, id, BacnetConfirmedServices.SERVICE_CONFIRMED_WRITE_PROPERTY, ref InOutBuffer);
-
-
-            //bacnet_client.WritePropertyRequest(
-            //    dev,
-            //    node,
-            //    id,
-            //    NoScalarValue);
-        }
-
-        #endregion
-
-        #region poll
-
-        public static void poll()
-        {
-            var poller = new BackgroundWorker();
-            poller.DoWork += new DoWorkEventHandler(poller_DoWork);
-            poller.RunWorkerCompleted += new RunWorkerCompletedEventHandler(poller_RunWorkerCompleted);
-            poller.RunWorkerAsync();
-        }
-
-        private static void poller_DoWork(object sender, DoWorkEventArgs e)
-        {
-            readData();
-        }
-
-        private static void poller_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            Log.append("poll complete");
-            sender = null;
-            GC.Collect();
-        }
-
-        #endregion
-
-        #region availability
-
-        public static List<string> collectDevices()
-        {
-            List<string> deviceList = new List<string>();
-
-            foreach (List<string> property in _global.bigDatapointTable)
-            {
-                var devIP = property[(int)_global.prop.deviceIP];
-                var devInst = property[(int)_global.prop.deviceInstance];
-                var deviceParameters = devIP + "." + devInst;
-
-                if (!deviceList.Contains(deviceParameters))
-                {
-                    deviceList.Add(deviceParameters);
-                }
-            }
-            return deviceList;
-        }
-
-        public static List<string> collectAvailableDevices(List<string> deviceList)
-        {
-            List<string> IPOfAvailableDevices = new List<string>();
-            foreach (string device in deviceList)
-            {
-                var parameter = device.Split('.');
-                var devIP = parameter[0] + "." + parameter[1] + "." + parameter[2] + "." + parameter[3];
-                var devInst = uint.Parse(parameter[4]);
-                var result = readValue(1, devIP, devInst, "DEV", devInst, "St");
-                if (result != null)
-                {
-                    IPOfAvailableDevices.Add(devIP);
-                }
-            }
-            return IPOfAvailableDevices;
-        }
-
-        public static void checkAvailability()
-        {
-            var availabilityChecker = new BackgroundWorker();
-            availabilityChecker.DoWork += new DoWorkEventHandler(availabilityChecker_DoWork);
-            availabilityChecker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(availabilityChecker_RunWorkerCompleted);
-            availabilityChecker.RunWorkerAsync();
-        }
-
-        public static void availabilityChecker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            var devicesInProject = collectDevices();
-            var availableDevices = collectAvailableDevices(devicesInProject);
-
-            foreach (string IP in availableDevices)
-            {
-                foreach (List<string> property in _global.bigDatapointTable)
-                {
-                    var available = property[(int)_global.prop.available];
-                    if (available == "")
-                    {
-                        var cov = property[(int)_global.prop.datapointCOV];
-                        var devIP = property[(int)_global.prop.deviceIP];
-                        var devInst = Convert.ToUInt16(property[(int)_global.prop.deviceInstance]);
-                        var objType = property[(int)_global.prop.objectType];
-                        var objInst = Convert.ToUInt16(property[(int)_global.prop.objectInstance]);
-                        if (devIP == "192.168.16.156")
-                        {
-
-                        }
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.available] = devIP == IP ? "True" : "";
-                    }
-                }
-            }
-
-            foreach (List<string> property in _global.bigDatapointTable)
-            {
-                var available = property[(int)_global.prop.available];
-                if (available == "")
-                {
-                    property[(int)_global.prop.available] = "False";
-                }
-            }
-            e.Result = 1;
-        }
-
-        private static void availabilityChecker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            availabilityCheckComplete = true;
-            Log.append("check availability of devices complete");
-            sender = null;
-            GC.Collect();
-        }
-
-        #endregion
-
-        #region readwrite
-
-        public static void readStates()
-        {
-            foreach (List<string> property in _global.bigDatapointTable)
-            {
-                var availability = bool.Parse(property[(int)_global.prop.available]);
-                var cov = property[(int)_global.prop.datapointCOV];
-                var devIP = property[(int)_global.prop.deviceIP];
-                var devInst = Convert.ToUInt16(property[(int)_global.prop.deviceInstance]);
-                var objType = property[(int)_global.prop.objectType];
-                var objInst = Convert.ToUInt16(property[(int)_global.prop.objectInstance]);
-
-                if (availability)
-                {
-                    switch (objType)
-                    {
-                        case "BI":
-                        case "BO":
-                        case "BV":
-                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.activeText] = Bac.readValue(1, devIP, devInst, objType, objInst, "AcTxt");
-                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.inactiveText] = Bac.readValue(1, devIP, devInst, objType, objInst, "IacTxt");
-                            break;
-                        case "MI":
-                        case "MO":
-                        case "MV":
-                            _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.stateText] = Bac.readValue(1, devIP, devInst, objType, objInst, "StTxt");
-                            break;
-                        case "SC":
-                            var reference = Bac.readValue(1, devIP, devInst, objType, objInst, "Ref");
-                            reference = reference.Replace(".PROP_PRESENT_VALUE", "");
-                            var refArray = reference.Split(':');
-
-                            var refObjType = refArray[0];
-                            var refObjInst = uint.Parse(refArray[1]);
-
-                            switch (refObjType)
-                            {
-                                case "OBJECT_BINARY_INPUT":
-                                case "OBJECT_BINARY_OUTPUT":
-                                case "OBJECT_BINARY_VALUE":
-                                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.activeText] = Bac.readValue(1, devIP, devInst, refObjType, refObjInst, "AcTxt");
-                                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.inactiveText] = Bac.readValue(1, devIP, devInst, refObjType, refObjInst, "IacTxt");
-                                    break;
-                                case "OBJECT_MULTI_STATE_INPUT":
-                                case "OBJECT_MULTI_STATE_OUTPUT":
-                                case "OBJECT_MULTI_STATE_VALUE":
-                                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.stateText] = Bac.readValue(1, devIP, devInst, refObjType, refObjInst, "StTxt");
-                                    break;
-                            }
-                            break;
-                    }
-                }
-
-            }
-        }
-
-        public static string readValue(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, string property)
-        {
-            var dev = bacnetDevice(deviceIP, networkNumber);
-            var node = bacnetNode(objectType, objectInstance);
-            var id = getPropertyId(property);
-
-            switch (property)
-            {
-                case "PV":
-                case "AcTxt":
-                case "IacTxt":
-                    IList<BacnetValue> NoScalarValue;
-                    bacnet_client.ReadPropertyRequest(dev, node, id, out NoScalarValue);
-                    var Value = parseBacnetValue(NoScalarValue);
-                    return Value;
-
-                case "StTxt":
-                case "St":
-                    IList<BacnetValue> StatusValue;
-                    bacnet_client.ReadPropertyRequest(dev, node, id, out StatusValue);
-                    if (StatusValue == null)
-                    {
-                        return null;
-                    }
-                    var StTxt = string.Join(",", StatusValue);
-                    return StTxt;
-
-                case "Weekly":
-                    var day = new string[] { "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" };
-                    byte[] InOutBuffer = null;
-                    bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(dev, node, id, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY, ref InOutBuffer);
-                    var weeklySchedule = parseWeeklySchedule(InOutBuffer);
-
-                    var eventsInString = "";
-                    var dayevent = "";
-                    var daycounter = 0;
-                    foreach (var item in weeklySchedule)
-                    {
-                        dayevent = string.Join(",",item);
-                        var separator = daycounter != 6 ? Environment.NewLine : null;
-                        eventsInString += dayevent + separator;
-                        daycounter++;
-                    }
-                    
-                    return eventsInString;
-
-                case "Ref":
-                    IList<BacnetValue> NoScalarValue1;
-                    bacnet_client.ReadPropertyRequest(dev, node, id, out NoScalarValue1);
-                    return NoScalarValue1[0].Value.ToString();
-                default:
-                    return "";
-            }
-        }
-
-        private static void readData()
-        {
-            foreach (List<string> property in _global.bigDatapointTable)
-            {
-                var availability = bool.Parse(property[(int)_global.prop.available]);
-                var cov = property[(int)_global.prop.datapointCOV];
-                var devIP = property[(int)_global.prop.deviceIP];
-                var devInst = Convert.ToUInt16(property[(int)_global.prop.deviceInstance]);
-                var objType = property[(int)_global.prop.objectType];
-                var objInst = Convert.ToUInt16(property[(int)_global.prop.objectInstance]);
-
-                if (!bool.Parse(cov) & availability)
-                {
-                    var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-                    var propertyToBeRead = "PV";
-
-                    if (objType == "SC")
-                    {
-                        propertyToBeRead = "Weekly";
-                        var week = Bac.readValue(1, devIP, devInst, objType, objInst, propertyToBeRead);
-                        var day = week.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayMo] = day[0];
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayTu] = day[1];
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayWe] = day[2];
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayTh] = day[3];
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.dayFr] = day[4];
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.daySa] = day[5];
-                        _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.daySu] = day[6];
-                    }
-                    propertyToBeRead = "PV";
-                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.value] = Bac.readValue(1, devIP, devInst, objType, objInst, propertyToBeRead);
-                    _global.dataTransfer.Add(new List<string> {
-                        property[(int)_global.prop.datapointName],
-                        property[(int)_global.prop.value],
-                        timestamp });
-                }
-                else if (!availability)
-                {
-                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.value] = "not available";
-                }
-            }
-        }
-
-        public static bool writeValue(ushort networkNumber, string deviceIP, string deviceInstance, string objectType, uint objectInstance, Nullable<int> valueToBeWritten)
-        {
-            bool ret;
-            bacnet_client.WritePriority = 8;
-            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten) };
-
-            switch (objectType.Substring(0, 1))
-            {
-                case "A":
-                    bacnetValueToBeWritten[0].Value = Convert.ToSingle(bacnetValueToBeWritten[0].Value);
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL;
-                    break;
-                case "B":
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED;
-                    break;
-
-                case "M":
-                    bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
-                    bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT;
-                    break;
-            }
-
-            try
-            {
-                ret = bacnet_client.WritePropertyRequest(
-                    bacnetDevice(deviceIP, networkNumber),
-                    bacnetNode(objectType, objectInstance),
-                    BacnetPropertyIds.PROP_PRESENT_VALUE,
-                    bacnetValueToBeWritten);
-                return ret;
-            }
-            catch (Exception e)
-            {
-                string read = "Error from device: ERROR_CLASS_PROPERTY - ERROR_CODE_WRITE_ACCESS_DENIED";
-
-                if (e.Message == read)
-                {
-                    MessageBox.Show("Ez az adatpont nem írható");
-                }
-                else
-                {
-                    MessageBox.Show(e.Message);
-                }
-                return false;
-            }
-        }
-
-        public static string parseBacnetValue(IList<BacnetValue> NoScalarValue)
+        public static string decodePresentValue(IList<BacnetValue> NoScalarValue)
         {
             BacnetValue Value;
             Value = NoScalarValue[0];
             return Value.Value.ToString();
         }
 
-        #endregion
+        public static string decodeWeeklySchedule(byte[] data)
+        {
+            // UNDONE: NOT IMPLEMENTED - decodeWeeklySchedule
+            return "";
+        }
+
+        public static void readAllValue()
+        {
+            var poller = new BackgroundWorker();
+            poller.DoWork += new DoWorkEventHandler(reader_DoWork);
+            poller.RunWorkerCompleted += new RunWorkerCompletedEventHandler(reader_RunWorkerCompleted);
+            poller.RunWorkerAsync();
+        }
+
+        private static void reader_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Log.Append("polling started");
+            var table = _global.bigDatapointTable;
+            foreach (List<string> column in table)
+            {
+                var poll = !bool.Parse(column[(int)DatapointDefinition.columns.datapointCOV]);
+                var bacnetDevice = getBacnetDevice(column[(int)DatapointDefinition.columns.deviceIP], 1);
+                var bacnetObject = getBacnetObject(column[(int)DatapointDefinition.columns.objectType], Convert.ToUInt16(column[(int)DatapointDefinition.columns.objectInstance]));
+
+                if (poll)
+                {
+                    var value = Bac.readValue(bacnetDevice, bacnetObject);
+                    Datapoints.record(bacnetDevice, bacnetObject, value);
+                }
+            }
+        }
+
+        private static void reader_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Log.Append("polling finished");
+            sender = null;
+            GC.Collect();
+        }
+
+        public static string readValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject)
+        {
+            try
+            {
+                IList<BacnetValue> Values;
+                bacnet_client.ReadPropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, out Values);
+                return decodePresentValue(Values);
+            }
+            catch (Exception ex)
+            {
+                Log.Append(ex.Message);
+            }
+            return null;
+        }
+
+        public static string readSchedule(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject)
+        {
+            try
+            {
+                byte[] byteValues = null;
+                bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(bacnetDevice, bacnetObject,
+                    BacnetPropertyIds.PROP_WEEKLY_SCHEDULE, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY,
+                    ref byteValues);
+                return decodeWeeklySchedule(byteValues);
+            }
+            catch (Exception ex)
+            {
+                Log.Append(ex.Message);
+            }
+            return null;
+        }
+
+        //public static List<List<string>> preParseWeeklySchedule(byte[] schedule, string type)
+        //{
+        //    var day = new List<List<string>>();
+        //    var counter = 0;
+        //    do
+        //    {
+        //        if (schedule[counter].ToString() == "14")
+        //        {
+        //            var dayEvents = new List<string>();
+        //            var divider =(schedule.Length-16) % 7 == 0 ? 7 : 10;
+        //            var dayEventCounter = 0;
+        //            while (counter + dayEventCounter < schedule.Length)
+        //            {
+        //                if (dayEventCounter % divider == 1 & schedule[counter + dayEventCounter].ToString() == "15")
+        //                {
+        //                    break;
+        //                }
+        //                dayEvents.Add(schedule[counter + dayEventCounter].ToString());
+        //                dayEventCounter++;
+        //            }
+        //            counter += dayEventCounter;
+        //            day.Add(dayEvents);
+        //        }
+        //        counter++;
+        //    } while (schedule[counter].ToString() != "63");
+        //    return day;
+        //}
+
+        //public static List<List<string>> parseWeeklySchedule(byte[] schedule)
+        //{
+        //    var preParsed = preParseWeeklySchedule(schedule, "");
+        //    var parsed = new List<List<string>>();
+
+        //    foreach (var day in preParsed)
+        //    {
+        //        var preDayEvent = new List<string>();
+        //        var preDayEventString = "";
+        //        preDayEventString = String.Join(" ", day);
+
+        //        var realEvent = preDayEventString.Split(new string[] { " 180 " }, StringSplitOptions.None);
+
+        //        preDayEvent = realEvent.ToList();
+        //        preDayEvent.RemoveAt(0);
+
+        //        var dayEvent = new List<string>();
+        //        foreach (var eventProperty in preDayEvent)
+        //        {
+        //            var prop = eventProperty.Split(' ');
+        //            var timeAndCommand = prop[0] + ":" + prop[1] + ":" + prop[2] + ":" + prop[3] + ":" + prop[5];
+        //            dayEvent.Add(timeAndCommand);
+        //        }
+        //        parsed.Add(dayEvent);
+        //    }
+        //    return parsed;
+        //}
+
+        private static void tryToBeRecursive(byte[] scheduleArray, int counter, int bytesToRead, int type)
+        {
+            if (counter < scheduleArray.Length)
+            {
+                var item = scheduleArray[counter];
+                var stringToJoin = "";
+                switch (item)
+                {
+                    case 62:
+                        break;
+
+                    case 14:
+                        scheduleIsInDay = true;
+                        break;
+
+                    case 15:
+                        stringToJoin = (counter != scheduleArray.Length - 2) ? "DaySep" : "";
+                        scheduleIsInCommand = true;
+                        scheduleIsInDay = false;
+                        break;
+
+                    case 180:
+                        scheduleIsInCommand = true;
+                        var temp = "";
+                        while (scheduleActualBytesToRead != 0)
+
+                        {
+                            var actual = scheduleArray[counter + 1 + (bytesToRead - scheduleActualBytesToRead)].ToString();
+                            var separator = (scheduleActualBytesToRead != 1) ? ";" : "";
+                            temp += actual + separator;
+
+                            scheduleActualBytesToRead--;
+                        }
+
+                        if (type == 68)
+                        {
+                            var array = temp.Split(';');
+                            var value = convertToSingle(array);
+                            var time = convertToTime(array);
+                            stringToJoin += time + value;
+                        }
+                        else
+                        {
+                            stringToJoin += temp;
+                        }
+
+                        counter += 6;
+                        scheduleActualBytesToRead = bytesToRead;
+                        stringToJoin += "ProgSep";
+                        scheduleIsInCommand = false;
+                        break;
+
+                    case 63:
+                        stringToJoin = "";
+                        break;
+                }
+                schedule += stringToJoin;
+                tryToBeRecursive(scheduleArray, counter + 1, bytesToRead, type);
+                //return false;
+            }
+            // return true;
+        }
+
+        public static string callRecursion(byte[] array, int bytesToRead, int type)
+        {
+            scheduleActualBytesToRead = bytesToRead;
+            schedule = "";
+            tryToBeRecursive(array, 0, bytesToRead, type);
+            return schedule;
+        }
+
+        public static void writeSchedule(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, byte[] value)
+        {
+            var bacnetDevice = getBacnetDevice(deviceIP, networkNumber);
+            var bacnetObject = getBacnetObject(objectType, objectInstance);
+            var bacnetProperty = BacnetPropertyIds.PROP_WEEKLY_SCHEDULE;
+
+            var InOutBuffer = value;
+            //var InOutBuffer = new byte[] {
+            //    62,
+            //    14,15, //hétfő
+            //    14,180,2,2,2,2,145,0,15, //kedd
+            //    14,180,3,3,3,3,145,0,180,3,3,3,4,145,1,15, //szerda
+            //    14,180,4,4,4,4,145,0,15, //csütörtök
+            //    14,180,5,5,5,5,145,0,15, //péntek
+            //    14,180,6,6,6,6,145,0,15, //szombat
+            //    14,180,7,7,7,7,145,0,15, //vasárnap
+            //    63 };
+
+            bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(bacnetDevice, bacnetObject, bacnetProperty, BacnetConfirmedServices.SERVICE_CONFIRMED_WRITE_PROPERTY, ref InOutBuffer);
+
+        }
+
+        public static void writeBoolValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic valueToBeWritten)
+        {
+            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten) };
+            bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
+            bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED;
+            try
+            {
+                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, bacnetValueToBeWritten);
+            }
+            catch (Exception e)
+            {
+                var err = (e.Message == "Error from device: ERROR_CLASS_PROPERTY - ERROR_CODE_WRITE_ACCESS_DENIED") ? "Readonly" : e.Message;
+                MessageBox.Show(err);
+            }
+        }
+
+        public static void writeIntValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic valueToBeWritten)
+        {
+            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten) };
+            bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
+            bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT;
+            try
+            {
+                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, bacnetValueToBeWritten);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        public static void writeFloatValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic valueToBeWritten)
+        {
+            var bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten)};
+            var reset = new BacnetValue[] { new BacnetValue(null) };
+            if (valueToBeWritten != "null")
+            {
+                bacnetValueToBeWritten[0].Value = Convert.ToSingle(bacnetValueToBeWritten[0].Value);
+                bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL;
+            }
+            var realValueToBeWritten = valueToBeWritten == "null" ? reset : bacnetValueToBeWritten;
+            try
+            {
+                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, realValueToBeWritten);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        public static void writeValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic valueToBeWritten, string format)
+        {
+            switch (format)
+            {
+                case "binary": writeBoolValue(bacnetDevice, bacnetObject, valueToBeWritten); break;
+                case "integer": writeIntValue(bacnetDevice, bacnetObject, valueToBeWritten); break;
+                case "float":  writeFloatValue(bacnetDevice, bacnetObject, valueToBeWritten); break;
+            }
+            Datapoints.record(bacnetDevice, bacnetObject, valueToBeWritten);
+        }
+
+        public static BacnetValue[] getBacnetValue(BacnetObjectId bacnetObject, string value, string format, bool reset)
+        {
+            var bacnetValueArray = new BacnetValue[] {new BacnetValue()};
+
+            if (!reset)
+            {
+                switch (format)
+                {
+                    case "binary": bacnetValueArray[0].Value = Convert.ToUInt32(value); bacnetValueArray[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED; break;
+                    case "int": bacnetValueArray[0].Value = Convert.ToUInt32(value); bacnetValueArray[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT; break;
+                    case "float": bacnetValueArray[0].Value = Convert.ToSingle(value); bacnetValueArray[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL; break;
+                }
+            }
+            else
+            {
+                switch (format)
+                {
+                    case "binary": bacnetValueArray[0].Value = null; bacnetValueArray[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED; break;
+                    case "int": bacnetValueArray[0].Value = null; bacnetValueArray[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT; break;
+                    case "float": bacnetValueArray[0].Value = null; bacnetValueArray[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL; break;
+                }
+            }
+
+            return bacnetValueArray;
+        }
+
+        public static void lofasz(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic value, string format, bool reset)
+        {
+            var ertek = getBacnetValue(bacnetObject, value, format, reset);
+            try
+            {
+                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, ertek);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
 
         #region CoV
 
-        public static void subscribe()
+        public static void subscribeToAll()
         {
             var subscriber = new BackgroundWorker();
             subscriber.DoWork += new DoWorkEventHandler(subscriber_DoWork);
@@ -570,121 +403,49 @@ namespace Visu_dataviewer
             subscriber.RunWorkerAsync();
         }
 
+        public static void subscribe(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject)
+        {
+            try
+            {
+                bacnet_client.SubscribeCOVRequest(bacnetDevice, bacnetObject, 0, false, false, _global.covLifetime);
+            }
+            catch (Exception ex)
+            {
+                var failureReason = ex.ToString();
+                Log.Append("Subscription failed " + bacnetDevice.adr + " " + bacnetObject.type + " " + bacnetObject.instance + " Reason: " + failureReason);
+            }
+        }
+
         public static void subscriber_DoWork(object sender, DoWorkEventArgs e)
         {
-            //subscribe(_global.bigDatapointTable);
-
-            foreach (List<string> property in _global.bigDatapointTable)
+            var table = _global.bigDatapointTable;
+            foreach (List<string> column in table)
             {
-                if (property[(int)_global.prop.deviceIP] == "192.168.16.213")
+                var bacnetDevice = getBacnetDevice(column[(int)DatapointDefinition.columns.deviceIP], 1);
+                var bacnetObject = getBacnetObject(column[(int)DatapointDefinition.columns.objectType],  Convert.ToUInt16(column[(int)DatapointDefinition.columns.objectInstance]));
+                var cov = bool.Parse(column[(int)DatapointDefinition.columns.datapointCOV]);
+                
+                if (cov)
                 {
-
-                }
-                var availability = bool.Parse(property[(int)_global.prop.available]);
-                var cov = bool.Parse(property[(int)_global.prop.datapointCOV]);
-                if (cov & availability)
-                {
-                    var devIP = property[(int)_global.prop.deviceIP];
-                    var devInst = Convert.ToUInt16(property[(int)_global.prop.deviceInstance]);
-                    var objType = property[(int)_global.prop.objectType];
-                    var objInst = Convert.ToUInt16(property[(int)_global.prop.objectInstance]);
-                    bacnet_client.SubscribeCOVRequest(
-                        bacnetDevice(devIP, 1),
-                        bacnetNode(objType, objInst),
-                        0, false, false, _global.covLifetime);
-                }
-                else if (!availability)
-                {
-                    _global.bigDatapointTable[_global.bigDatapointTable.IndexOf(property)][(int)_global.prop.value] = "not available";
+                    subscribe(bacnetDevice, bacnetObject);
                 }
             }
-
         }
 
         private static void subscriber_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            Log.append("subscribe complete");
+            Log.Append("subscribe complete");
         }
 
-        public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress adr, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId monitoredObjectIdentifier, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
+        public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress bacnetDevice, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId bacnetObject, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
         {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var ip = convertToIP(adr);
-            var devInst = initiatingDeviceIdentifier.Instance;
-            var objInstance = monitoredObjectIdentifier.Instance;
-            var objType = customTypeFromBacnetObjectType(monitoredObjectIdentifier.Type);
-            var remainingTime = timeRemaining;
+            if ((BacnetPropertyIds)values.ToList()[0].property.propertyIdentifier == BacnetPropertyIds.PROP_PRESENT_VALUE)
+                Datapoints.record(bacnetDevice, bacnetObject, values.ToList()[0].value[0].ToString());
 
-
-            foreach (BacnetPropertyValue value in values)
-            {
-
-                switch ((BacnetPropertyIds)value.property.propertyIdentifier)
-                {
-                    case BacnetPropertyIds.PROP_PRESENT_VALUE:
-                        var rawData = value.value[0].ToString();
-
-                        foreach (var item in _global.bigDatapointTable)
-                        {
-                            if (
-                                (item[5] == ip) &
-                                (item[6] == devInst.ToString()) &
-                                (item[7] == objType) &
-                                (item[8] == objInstance.ToString())
-                                )
-                            {
-                                item[9] = formatValue(rawData, item[2]);
-                                if (bool.Parse(item[3]))
-                                {
-
-                                    _global.dataTransfer.Add(new List<string> { item[0], item[9], timestamp });
-                                }
-                                break;
-                            }
-                        }
-                        //WriteFile("SavedList_COV.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
-                        //logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-                        break;
-
-                    //case BacnetPropertyIds.PROP_STATUS_FLAGS:
-                    //    Event = "Állapotváltozás";
-                    //    string status_text = "";
-                    //    if (value.value != null && value.value.Count > 0)
-                    //    {
-                    //        // egyszerre kapom meg a statusflageket, így egyszerre kell visszaadnom az állapotokat
-                    //        BacnetStatusFlags status = (BacnetStatusFlags)((BacnetBitString)value.value[0].Value).ConvertToInt();
-                    //        if ((status & BacnetStatusFlags.STATUS_FLAG_FAULT) == BacnetStatusFlags.STATUS_FLAG_FAULT)
-                    //            status_text = "Hibás érték";
-                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_IN_ALARM) == BacnetStatusFlags.STATUS_FLAG_IN_ALARM)
-                    //            status_text = "Hiba";
-                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE) == BacnetStatusFlags.STATUS_FLAG_OUT_OF_SERVICE)
-                    //            status_text = "Használaton kívül";
-                    //        else if ((status & BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN) == BacnetStatusFlags.STATUS_FLAG_OVERRIDDEN)
-                    //            status_text = "Felülbírálva";
-                    //        else
-                    //            status_text = "Valami más történt:";
-                    //    }
-                    //    if (status_text != "")
-                    //    {
-                    //        Value = status_text;
-
-                    //        Program.events.Add(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-                    //        logToListbox(timestamp + ": " + Event + " " + initiatingDeviceIdentifier + " " + monitoredObjectIdentifier + " " + Value);
-                    //        //WriteFile("SavedList_Event.txt", timestamp + " " + Event + " " + initiatingDeviceIdentifier.ToString() + " " + monitoredObjectIdentifier.ToString() + " " + Value, 10, 10);
-                    //    }
-                    //    break;
-
-                    default:
-                        rawData = "";
-                        break;
-                }
-            }
             if (need_confirm)
-            {
-                sender.SimpleAckResponse(adr, BacnetConfirmedServices.SERVICE_CONFIRMED_COV_NOTIFICATION, invoke_id);
-            }
+                sender.SimpleAckResponse(bacnetDevice, BacnetConfirmedServices.SERVICE_CONFIRMED_COV_NOTIFICATION, invoke_id);
         }
-
+   
         #endregion
 
         #region format / convert
@@ -711,6 +472,8 @@ namespace Visu_dataviewer
                     return "MO";
                 case BacnetObjectTypes.OBJECT_MULTI_STATE_VALUE:
                     return "MV";
+                case BacnetObjectTypes.OBJECT_POSITIVE_INTEGER_VALUE:
+                    return "PIV";
             }
 
             return "";
@@ -722,6 +485,12 @@ namespace Visu_dataviewer
             Array.Resize(ref address, 4);
 
             return new System.Net.IPAddress(address).ToString();
+        }
+
+        public static BacnetAddress convertToIP2(BacnetAddress adr)
+        {
+
+            return (BacnetAddress)adr;
         }
 
         public static string formatValue(string value, string format)
@@ -746,6 +515,22 @@ namespace Visu_dataviewer
             }
 
             return correctValue;
+        }
+
+        public static string convertToTime(string[] array)
+        {
+            return array[0] + array[1] + array[2] + array[3];
+        }
+
+        public static float convertToSingle(string[] array)
+        {
+            var var1 = Convert.ToByte(array[8]);
+            var var2 = Convert.ToByte(array[7]);
+            var var3 = Convert.ToByte(array[6]);
+            var var4 = Convert.ToByte(array[5]);
+            var tempbytearray = new byte[] { var1, var2, var3, var4 };
+            var value = BitConverter.ToSingle(tempbytearray, 0);
+            return value;
         }
 
         #endregion

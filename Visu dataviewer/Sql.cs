@@ -12,8 +12,10 @@ namespace Visu_dataviewer
 
         public static SqlConnectionStringBuilder builder;
         public static SqlConnection connection;
+        public static List<List<string>> dataTransfer;
         static Sql()
         {
+            dataTransfer = new List<List<string>>();
             builder = new SqlConnectionStringBuilder();
             connection = new SqlConnection();
             //builder.ConnectionString = "server=(local);user id=ab;" +
@@ -30,30 +32,25 @@ namespace Visu_dataviewer
             connection.Open();
         }
 
+        public static void addToDataTransferList(List<string> data)
+        {
+            dataTransfer.Add(data);
+        }
+
         public static void writeList(List<List<string>> list,int quantity)
         {
             
             var allDataRow = "";
             for (int i = 0; i < quantity; i++)
             {
-                //var dataRow = "";
                 var dataRow = String.Join("','", list[i]);
-                //dataRow = "VALUES(" + dataRow + ")";
-                if (i != quantity - 1)
-                {
-                    dataRow = "('" + dataRow + "')," + Environment.NewLine;
-                }
-                else
-                {
-                    dataRow = "('" + dataRow + "')" + Environment.NewLine;
-                }
-                allDataRow = allDataRow + dataRow;
+                var separator = (i == quantity - 1) ? "" : ",";
+
+                dataRow = "('" + dataRow + "')" + separator; 
+                allDataRow += dataRow;
             }
 
-            allDataRow = allDataRow + ";";
-            
-            
-
+            allDataRow += ";";
 
             string queryString =
                 "INSERT INTO [database].[dbo].[table] ([Datapoint name], [Datapoint value], Timestamp) VALUES " + allDataRow;
