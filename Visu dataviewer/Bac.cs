@@ -64,17 +64,24 @@ namespace Visu_dataviewer
             return bacnetDev;
         }
 
+        #region read
+
         public static string decodePresentValue(IList<BacnetValue> NoScalarValue)
         {
             BacnetValue Value;
             Value = NoScalarValue[0];
-            return Value.Value.ToString();
+            return Value.Value != null ? Value.Value.ToString() : "null";
         }
 
         public static string decodeWeeklySchedule(byte[] data)
         {
             // UNDONE: NOT IMPLEMENTED - decodeWeeklySchedule
-            return "";
+            var result = new List<string>();
+            foreach (byte byt in data)
+            {
+                result.Add(byt.ToString());
+            }
+            return string.Join(",",result);
         }
 
         public static void readAllValue()
@@ -142,6 +149,7 @@ namespace Visu_dataviewer
             return null;
         }
 
+        
         //public static List<List<string>> preParseWeeklySchedule(byte[] schedule, string type)
         //{
         //    var day = new List<List<string>>();
@@ -269,6 +277,10 @@ namespace Visu_dataviewer
             return schedule;
         }
 
+        #endregion
+
+        #region write
+
         public static void writeSchedule(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, byte[] value)
         {
             var bacnetDevice = getBacnetDevice(deviceIP, networkNumber);
@@ -342,17 +354,6 @@ namespace Visu_dataviewer
             }
         }
 
-        public static void writeValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic valueToBeWritten, string format)
-        {
-            switch (format)
-            {
-                case "binary": writeBoolValue(bacnetDevice, bacnetObject, valueToBeWritten); break;
-                case "integer": writeIntValue(bacnetDevice, bacnetObject, valueToBeWritten); break;
-                case "float":  writeFloatValue(bacnetDevice, bacnetObject, valueToBeWritten); break;
-            }
-            Datapoints.record(bacnetDevice, bacnetObject, valueToBeWritten);
-        }
-
         public static BacnetValue[] getBacnetValue(BacnetObjectId bacnetObject, string value, string format, bool reset)
         {
             var bacnetValueArray = new BacnetValue[] {new BacnetValue()};
@@ -379,7 +380,7 @@ namespace Visu_dataviewer
             return bacnetValueArray;
         }
 
-        public static void lofasz(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic value, string format, bool reset)
+        public static void writeValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic value, string format, bool reset)
         {
             var ertek = getBacnetValue(bacnetObject, value, format, reset);
             try
@@ -392,6 +393,7 @@ namespace Visu_dataviewer
             }
         }
 
+        #endregion
 
         #region CoV
 

@@ -24,6 +24,8 @@ namespace Visu_dataviewer
             InitializeComponent();
         }
 
+
+
         private void DataViewer_Load(object sender, EventArgs e)
         {
             _global.ini();
@@ -34,6 +36,7 @@ namespace Visu_dataviewer
         {
             addContentToListview();
             UItimer.Enabled = true;
+            startProgress();
         }
 
         public void addHeaders(string[] headers)
@@ -85,7 +88,19 @@ namespace Visu_dataviewer
 
 
 
-
+        private void startProgress()
+        {
+            startBacnet();
+            Log.Append("Online mode");
+            covSubscriptionTimer.Interval = Convert.ToInt32((_global.covLifetime - 1) * 1000);
+            covSubscriptionTimer.Enabled = true;
+            Bac.subscribeToAll();
+            Log.Append("Subscription started");
+            pollingTimer.Interval = int.Parse(pollingIntervalTextbox.Text) * 1000;
+            pollingTimer.Enabled = true;
+            Bac.readAllValue();
+            Log.Append("Pollings started");
+        }
 
         private void covSubscriptionTimer_Tick(object sender, EventArgs e)
         {
@@ -113,12 +128,11 @@ namespace Visu_dataviewer
 
         private bool startBacnet()
         {
-            return Bac.startActivity("192.168.16.57");
+            return Bac.startActivity("192.168.1.77");
         }
 
         private void pollingTimer_Tick(object sender, EventArgs e)
         {
-            Log.Append("Polling timer tick");
             Bac.readAllValue();
         }
 
@@ -151,100 +165,19 @@ namespace Visu_dataviewer
         private void openReaderWriter(ListViewItem selected)
         {
             var readerwriter = Application.OpenForms["ReaderWriter"] as ReaderWriter;
-
             if (readerwriter == null)
-            {
                 readerwriter = new ReaderWriter();
-            }
-            readerwriter.selected = selected;
-            readerwriter.nameLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointName].Text;
-            readerwriter.descLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointDescription].Text;
-            readerwriter.typeLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointDatatype].Text;
-            readerwriter.recLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointSave].Text;
-            readerwriter.objCovLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.datapointCOV].Text;
-            readerwriter.devIPLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.deviceIP].Text;
-            readerwriter.devInstLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.deviceInstance].Text;
-            readerwriter.objTypeLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.objectType].Text;
-            readerwriter.objInstLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.objectInstance].Text;
-            readerwriter.readedValueLabel.Text = selected.SubItems[(int)DatapointDefinition.columns.value].Text;
+            readerwriter.transferData(selected);
             readerwriter.Show();
         }
 
         private void openScheduleReaderWriter(ListViewItem selected)
         {
-            var offsetDueToMultistate = 0;
-            var edit = Application.OpenForms["ScheduleReaderWriter"] as ScheduleReaderWriter;
-
-            if (edit == null)
-            {
-                edit = new ScheduleReaderWriter();
-            }
-
-            edit.dataGridView1.Rows.Clear();
-            var week = new List<string>
-            {
-                selected.SubItems[(int)_global.prop.dayMo].Text,
-                selected.SubItems[(int)_global.prop.dayTu].Text,
-                selected.SubItems[(int)_global.prop.dayWe].Text,
-                selected.SubItems[(int)_global.prop.dayTh].Text,
-                selected.SubItems[(int)_global.prop.dayFr].Text,
-                selected.SubItems[(int)_global.prop.daySa].Text,
-                selected.SubItems[(int)_global.prop.daySu].Text,
-            };
-
-            var possibleCommands = new DataGridViewComboBoxCell();
-            if (selected.SubItems[(int)_global.prop.stateText].Text == "")
-            {
-                possibleCommands.Items.Add(selected.SubItems[(int)_global.prop.inactiveText].Text);
-                possibleCommands.Items.Add(selected.SubItems[(int)_global.prop.activeText].Text);
-            }
-            else
-            {
-                var commands = selected.SubItems[(int)_global.prop.stateText].Text.Split(',');
-
-                foreach (var command in commands)
-                {
-                    possibleCommands.Items.Add(command);
-                }
-                offsetDueToMultistate = 1;
-            }
-
-            var scheduleTimeAndCommands = collectWeeklyScheduleByTimeAndCommand(week);
-
-            var rowsAdded = 0;
-            foreach (string timeAndCommand in scheduleTimeAndCommands)
-            {
-                var timeAndCommandArray = timeAndCommand.Split(':');
-                var hour = _global.normalizeNumber(timeAndCommandArray[0],2);
-                var minute = _global.normalizeNumber(timeAndCommandArray[1], 2);
-                var second = _global.normalizeNumber(timeAndCommandArray[2], 2);
-                var time = hour + ":" + minute + ":" + second;
-                var command = timeAndCommandArray[4];
-
-                
-                edit.dataGridView1.Rows.Add(time, "", "", false, false, false, false, false, false, false);
-
-                var indexOfDay = 0;
-
-                var actions = (DataGridViewComboBoxCell)edit.dataGridView1.Rows[rowsAdded].Cells[1];
-                foreach (var action in possibleCommands.Items)
-                {
-                    actions.Items.Add(action);
-                }
-                actions.Value = possibleCommands.Items[int.Parse(command) - offsetDueToMultistate];
-
-                foreach (string day in week)
-                {
-                    if (day.Contains(timeAndCommand))
-                    {
-                        DataGridViewCheckBoxCell chk = (DataGridViewCheckBoxCell)edit.dataGridView1.Rows[rowsAdded].Cells[week.IndexOf(day) + 3];
-                        edit.dataGridView1.Rows[rowsAdded].Cells[indexOfDay + 3].Value = true;
-                    }
-                    indexOfDay++;
-                }
-                rowsAdded++;
-            }
-            edit.Show();
+            var schedulereaderwriter = Application.OpenForms["ScheduleReaderWriter"] as ScheduleReaderWriter;
+            if (schedulereaderwriter == null)
+                schedulereaderwriter = new ScheduleReaderWriter();
+            schedulereaderwriter.transferData(selected);
+            schedulereaderwriter.Show();
         }
 
         private List<string> collectWeeklyScheduleByTimeAndCommand(List<string> week)
@@ -279,28 +212,20 @@ namespace Visu_dataviewer
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             var selected = listView1.SelectedItems[0];
-
             if (selected.SubItems[(int)DatapointDefinition.columns.objectType].Text == "SC")
             {
                 openScheduleReaderWriter(selected);
-                return;
             }
-            openReaderWriter(selected);
+            else
+            {
+                openReaderWriter(selected);
+            }
+            
         }
 
         private void sqlConnectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Sql.connect();
-        }
-
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void listView1_SelectedIndexChanged_1(object sender, EventArgs e)
-        {
-
         }
     }
 }

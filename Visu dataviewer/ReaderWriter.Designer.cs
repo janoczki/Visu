@@ -500,7 +500,6 @@ namespace Visu_dataviewer
         private System.Windows.Forms.GroupBox groupBox9;
         public System.Windows.Forms.Label readedValueLabel;
         private System.Windows.Forms.Label label17;
-        public ListViewItem selected;
         private Button resetButton;
     }
 }
