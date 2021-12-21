@@ -177,6 +177,7 @@ namespace Visu_dataviewer
             if (schedulereaderwriter == null)
                 schedulereaderwriter = new ScheduleReaderWriter();
             schedulereaderwriter.transferData(selected);
+            var schedule = schedulereaderwriter.parseSchedule(selected);
             schedulereaderwriter.Show();
         }
 

@@ -14,29 +14,48 @@ namespace Visu_dataviewer
     public partial class ScheduleReaderWriter : Form
     {
         public ListViewItem selected;
+
         public ScheduleReaderWriter()
         {
             InitializeComponent();
         }
 
-        private void dataGridView1_DataError(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            MessageBox.Show(e.ColumnIndex.ToString() + e.RowIndex.ToString() + e.Exception);
-        }
-
         public void transferData(ListViewItem selected)
         {
-            var bacnetDevice = Bac.getBacnetDevice(selected.SubItems[(int)DatapointDefinition.columns.deviceIP].Text,1);
-            var bacnetObject = Bac.getBacnetObject(selected.SubItems[(int)DatapointDefinition.columns.objectType].Text, Convert.ToUInt16(selected.SubItems[(int)DatapointDefinition.columns.objectInstance].Text));
-            var asd = Bac.readSchedule(bacnetDevice, bacnetObject);
             this.selected = selected;
+        }
+
+        public string readSchedule(ListViewItem selected)
+        {
+            var bacnetDevice = Bac.getBacnetDevice(selected.SubItems[(int)DatapointDefinition.columns.deviceIP].Text, 1);
+            var bacnetObject = Bac.getBacnetObject(selected.SubItems[(int)DatapointDefinition.columns.objectType].Text, Convert.ToUInt16(selected.SubItems[(int)DatapointDefinition.columns.objectInstance].Text));
+            var type = selected.SubItems[(int)DatapointDefinition.columns.datapointDatatype].Text;
+            return Bac.readSchedule(bacnetDevice, bacnetObject, type);
+        }
+
+        public List<List<string>> parseSchedule(ListViewItem selected)
+        {
+            var schedule = readSchedule(selected);
+            var parsedSchedule = new List<List<string>>();
+            
+            var days = schedule.Split(new string[] { "DaySep" }, StringSplitOptions.None);
+            foreach (string day in days)
+            {
+                var commands = day.Split(new string[] { "ProgSep" }, StringSplitOptions.RemoveEmptyEntries);
+                var parsedDay = new List<string>();
+                foreach (string command in commands)
+                {
+                    parsedDay.Add(command);
+                }
+                parsedSchedule.Add(parsedDay.ToList());
+            }
+            return parsedSchedule;
         }
 
         private void addHeaders(string type)
         {
             var timeColumn = new DataGridViewTextBoxColumn() { Name = "Time", HeaderText = "Time", AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader };
             DataGridViewColumn actionColumn;
-
             if (type == "enum")
             {
                 actionColumn = new DataGridViewComboBoxColumn() { Name = "Action", HeaderText = "Action", AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader };

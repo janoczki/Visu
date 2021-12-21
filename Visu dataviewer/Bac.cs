@@ -132,21 +132,20 @@ namespace Visu_dataviewer
             return null;
         }
 
-        public static string readSchedule(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject)
+        public static string readSchedule(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, string type)
         {
             try
             {
                 byte[] byteValues = null;
-                bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(bacnetDevice, bacnetObject,
-                    BacnetPropertyIds.PROP_WEEKLY_SCHEDULE, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY,
-                    ref byteValues);
-                return decodeWeeklySchedule(byteValues);
+
+                bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_WEEKLY_SCHEDULE, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY, ref byteValues);
+                return callRecursion(byteValues, getScheduleBytesToRead(type), getScheduleType(type));
             }
             catch (Exception ex)
             {
                 Log.Append(ex.Message);
+                return null;
             }
-            return null;
         }
 
         
@@ -240,18 +239,21 @@ namespace Visu_dataviewer
                             scheduleActualBytesToRead--;
                         }
 
+                        var array = temp.Split(';');
+                        var time = convertToTime(array);
+                        var value = "";
                         if (type == 68)
                         {
-                            var array = temp.Split(';');
-                            var value = convertToSingle(array);
-                            var time = convertToTime(array);
-                            stringToJoin += time + value;
+                            value = convertToSingle(array).ToString();
+                            //stringToJoin += time + ";" + type.ToString() + ";" + value;
                         }
                         else
                         {
-                            stringToJoin += temp;
+                            value = array[5];
+                            //stringToJoin += time + ";" + type.ToString() + ";" + value;
+                            //stringToJoin += temp;
                         }
-
+                        stringToJoin += time + ";" + type.ToString() + ";" + value;
                         counter += 6;
                         scheduleActualBytesToRead = bytesToRead;
                         stringToJoin += "ProgSep";
@@ -380,12 +382,35 @@ namespace Visu_dataviewer
             return bacnetValueArray;
         }
 
+        public static int getScheduleType(string typeString)
+        {
+            int type = 0;
+            switch (typeString)
+            {
+                case "float": type = 68; break;
+                case "binary": type = 145; break;
+                case "int":  type = 33; break;
+            }
+            return type;
+        }
+
+        public static int getScheduleBytesToRead(string typeString)
+        {
+            int bytesToRead = 0;
+            switch (typeString)
+            {
+                case "float": bytesToRead = 10; break;
+                default: bytesToRead = 6; break;
+            }
+            return bytesToRead;
+        }
+
         public static void writeValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic value, string format, bool reset)
         {
-            var ertek = getBacnetValue(bacnetObject, value, format, reset);
+            var valueToWrite = getBacnetValue(bacnetObject, value, format, reset);
             try
             {
-                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, ertek);
+                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, valueToWrite);
             }
             catch (Exception e)
             {
@@ -521,7 +546,8 @@ namespace Visu_dataviewer
 
         public static string convertToTime(string[] array)
         {
-            return array[0] + array[1] + array[2] + array[3];
+            var hour = array[0]; 
+            return array[0] + ";" + array[1] + ";" + array[2] + ";" + array[3];
         }
 
         public static float convertToSingle(string[] array)
