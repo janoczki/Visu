@@ -67,7 +67,6 @@ namespace Visu_dataviewer
                 foreach (string row in datapointTable)
                 {
                     var datapoint = (row + ";").Split(';');
-                    global.bigDatapointTable.Add(datapoint.ToList());
                     Datapoints.table.Add(datapoint.ToList());
                     listView1.Items.Add(new ListViewItem(datapoint));
                 }

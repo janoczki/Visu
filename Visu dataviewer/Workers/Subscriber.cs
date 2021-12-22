@@ -8,9 +8,9 @@ namespace Visu_dataviewer.Workers
 {
     class Subscriber
     {
-        public static void DoWork(object sender, DoWorkEventArgs e)
+        public static void Work(object sender, DoWorkEventArgs e)
         {
-            var table = global.bigDatapointTable;
+            var table = Datapoints.table;
             foreach (List<string> column in table)
             {
                 var bacnetDevice = Bac.getBacnetDevice(column[(int)DatapointDefinition.columns.deviceIP], 1);
@@ -24,7 +24,7 @@ namespace Visu_dataviewer.Workers
             }
         }
 
-        public static void RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        public static void Complete(object sender, RunWorkerCompletedEventArgs e)
         {
             Log.Append("subscribe complete");
         }

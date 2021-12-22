@@ -14,14 +14,14 @@ namespace Visu_dataviewer
         public static string path;
         public static uint covLifetime;
         public static int pollInterval;
-        public static List<List<string>> bigDatapointTable;
+       // public static List<List<string>> bigDatapointTable;
         
         public static string config;
         public static List<List<string>> dataTransfer;
         public static int cycleCounter = 1;
         static global()
         {
-            bigDatapointTable = new List<List<string>>();
+            //bigDatapointTable = new List<List<string>>();
             now = DateTime.Now.ToString("yyyy.MM.dd HH.mm.ss");
             dataTransfer = new List<List<string>>();
 

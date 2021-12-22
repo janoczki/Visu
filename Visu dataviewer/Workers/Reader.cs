@@ -15,10 +15,10 @@ namespace Visu_dataviewer.Workers
 {
     class Reader
     {
-        public static void DoWork(object sender, DoWorkEventArgs e)
+        public static void Work(object sender, DoWorkEventArgs e)
         {
             Log.Append("polling started");
-            var table = global.bigDatapointTable;
+            var table = Datapoints.table;
             foreach (List<string> column in table)
             {
                 var poll = !bool.Parse(column[(int)DatapointDefinition.columns.datapointCOV]);
@@ -33,7 +33,7 @@ namespace Visu_dataviewer.Workers
             }
         }
 
-        public static void RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        public static void Complete(object sender, RunWorkerCompletedEventArgs e)
         {
             Log.Append("polling finished");
             sender = null;
