@@ -30,7 +30,7 @@ namespace Visu_dataviewer
 
         public static void writeLogFile(object source, ElapsedEventArgs e)
         {
-            var path = Path.Combine(@"c:\Visu\Logs\", _global.now + ".txt");
+            var path = Path.Combine(@"c:\Visu\Logs\", global.now + ".txt");
             var len = logMessages.Count;
             
             if (len > 0)

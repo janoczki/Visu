@@ -316,11 +316,13 @@ namespace Visu_dataviewer
             // 
             // dataGridView2
             // 
+            this.dataGridView2.AllowUserToAddRows = false;
             this.dataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView2.Location = new System.Drawing.Point(6, 16);
             this.dataGridView2.Name = "dataGridView2";
             this.dataGridView2.Size = new System.Drawing.Size(485, 249);
             this.dataGridView2.TabIndex = 1;
+            this.dataGridView2.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView2_DataError);
             // 
             // button3
             // 
@@ -344,7 +346,6 @@ namespace Visu_dataviewer
             this.Name = "ScheduleReaderWriter";
             this.Text = "ScheduleReaderWriter";
             this.TopMost = true;
-            this.Load += new System.EventHandler(this.ScheduleReaderWriter_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);

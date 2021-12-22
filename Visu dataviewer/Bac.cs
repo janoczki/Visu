@@ -64,60 +64,22 @@ namespace Visu_dataviewer
             return bacnetDev;
         }
 
-        #region read
-
         public static string decodePresentValue(IList<BacnetValue> NoScalarValue)
         {
             BacnetValue Value;
             Value = NoScalarValue[0];
             return Value.Value != null ? Value.Value.ToString() : "null";
         }
-
-        public static string decodeWeeklySchedule(byte[] data)
+        
+        public static void readAll()
         {
-            // UNDONE: NOT IMPLEMENTED - decodeWeeklySchedule
-            var result = new List<string>();
-            foreach (byte byt in data)
-            {
-                result.Add(byt.ToString());
-            }
-            return string.Join(",",result);
+            var reader = new BackgroundWorker();
+            reader.DoWork += new DoWorkEventHandler(Workers.Reader.Work);
+            reader.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Workers.Reader.Complete);
+            reader.RunWorkerAsync();
         }
-
-        public static void readAllValue()
-        {
-            var poller = new BackgroundWorker();
-            poller.DoWork += new DoWorkEventHandler(reader_DoWork);
-            poller.RunWorkerCompleted += new RunWorkerCompletedEventHandler(reader_RunWorkerCompleted);
-            poller.RunWorkerAsync();
-        }
-
-        private static void reader_DoWork(object sender, DoWorkEventArgs e)
-        {
-            Log.Append("polling started");
-            var table = _global.bigDatapointTable;
-            foreach (List<string> column in table)
-            {
-                var poll = !bool.Parse(column[(int)DatapointDefinition.columns.datapointCOV]);
-                var bacnetDevice = getBacnetDevice(column[(int)DatapointDefinition.columns.deviceIP], 1);
-                var bacnetObject = getBacnetObject(column[(int)DatapointDefinition.columns.objectType], Convert.ToUInt16(column[(int)DatapointDefinition.columns.objectInstance]));
-
-                if (poll)
-                {
-                    var value = Bac.readValue(bacnetDevice, bacnetObject);
-                    Datapoints.record(bacnetDevice, bacnetObject, value);
-                }
-            }
-        }
-
-        private static void reader_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            Log.Append("polling finished");
-            sender = null;
-            GC.Collect();
-        }
-
-        public static string readValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject)
+        
+        public static string read(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject)
         {
             try
             {
@@ -131,157 +93,6 @@ namespace Visu_dataviewer
             }
             return null;
         }
-
-        public static string readSchedule(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, string type)
-        {
-            try
-            {
-                byte[] byteValues = null;
-
-                bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_WEEKLY_SCHEDULE, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY, ref byteValues);
-                return callRecursion(byteValues, getScheduleBytesToRead(type), getScheduleType(type));
-            }
-            catch (Exception ex)
-            {
-                Log.Append(ex.Message);
-                return null;
-            }
-        }
-
-        
-        //public static List<List<string>> preParseWeeklySchedule(byte[] schedule, string type)
-        //{
-        //    var day = new List<List<string>>();
-        //    var counter = 0;
-        //    do
-        //    {
-        //        if (schedule[counter].ToString() == "14")
-        //        {
-        //            var dayEvents = new List<string>();
-        //            var divider =(schedule.Length-16) % 7 == 0 ? 7 : 10;
-        //            var dayEventCounter = 0;
-        //            while (counter + dayEventCounter < schedule.Length)
-        //            {
-        //                if (dayEventCounter % divider == 1 & schedule[counter + dayEventCounter].ToString() == "15")
-        //                {
-        //                    break;
-        //                }
-        //                dayEvents.Add(schedule[counter + dayEventCounter].ToString());
-        //                dayEventCounter++;
-        //            }
-        //            counter += dayEventCounter;
-        //            day.Add(dayEvents);
-        //        }
-        //        counter++;
-        //    } while (schedule[counter].ToString() != "63");
-        //    return day;
-        //}
-
-        //public static List<List<string>> parseWeeklySchedule(byte[] schedule)
-        //{
-        //    var preParsed = preParseWeeklySchedule(schedule, "");
-        //    var parsed = new List<List<string>>();
-
-        //    foreach (var day in preParsed)
-        //    {
-        //        var preDayEvent = new List<string>();
-        //        var preDayEventString = "";
-        //        preDayEventString = String.Join(" ", day);
-
-        //        var realEvent = preDayEventString.Split(new string[] { " 180 " }, StringSplitOptions.None);
-
-        //        preDayEvent = realEvent.ToList();
-        //        preDayEvent.RemoveAt(0);
-
-        //        var dayEvent = new List<string>();
-        //        foreach (var eventProperty in preDayEvent)
-        //        {
-        //            var prop = eventProperty.Split(' ');
-        //            var timeAndCommand = prop[0] + ":" + prop[1] + ":" + prop[2] + ":" + prop[3] + ":" + prop[5];
-        //            dayEvent.Add(timeAndCommand);
-        //        }
-        //        parsed.Add(dayEvent);
-        //    }
-        //    return parsed;
-        //}
-
-        private static void tryToBeRecursive(byte[] scheduleArray, int counter, int bytesToRead, int type)
-        {
-            if (counter < scheduleArray.Length)
-            {
-                var item = scheduleArray[counter];
-                var stringToJoin = "";
-                switch (item)
-                {
-                    case 62:
-                        break;
-
-                    case 14:
-                        scheduleIsInDay = true;
-                        break;
-
-                    case 15:
-                        stringToJoin = (counter != scheduleArray.Length - 2) ? "DaySep" : "";
-                        scheduleIsInCommand = true;
-                        scheduleIsInDay = false;
-                        break;
-
-                    case 180:
-                        scheduleIsInCommand = true;
-                        var temp = "";
-                        while (scheduleActualBytesToRead != 0)
-
-                        {
-                            var actual = scheduleArray[counter + 1 + (bytesToRead - scheduleActualBytesToRead)].ToString();
-                            var separator = (scheduleActualBytesToRead != 1) ? ";" : "";
-                            temp += actual + separator;
-
-                            scheduleActualBytesToRead--;
-                        }
-
-                        var array = temp.Split(';');
-                        var time = convertToTime(array);
-                        var value = "";
-                        if (type == 68)
-                        {
-                            value = convertToSingle(array).ToString();
-                            //stringToJoin += time + ";" + type.ToString() + ";" + value;
-                        }
-                        else
-                        {
-                            value = array[5];
-                            //stringToJoin += time + ";" + type.ToString() + ";" + value;
-                            //stringToJoin += temp;
-                        }
-                        stringToJoin += time + ";" + type.ToString() + ";" + value;
-                        counter += 6;
-                        scheduleActualBytesToRead = bytesToRead;
-                        stringToJoin += "ProgSep";
-                        scheduleIsInCommand = false;
-                        break;
-
-                    case 63:
-                        stringToJoin = "";
-                        break;
-                }
-                schedule += stringToJoin;
-                tryToBeRecursive(scheduleArray, counter + 1, bytesToRead, type);
-                //return false;
-            }
-            // return true;
-        }
-
-        public static string callRecursion(byte[] array, int bytesToRead, int type)
-        {
-            scheduleActualBytesToRead = bytesToRead;
-            schedule = "";
-            tryToBeRecursive(array, 0, bytesToRead, type);
-            return schedule;
-        }
-
-        #endregion
-
-        #region write
 
         public static void writeSchedule(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, byte[] value)
         {
@@ -381,30 +192,7 @@ namespace Visu_dataviewer
 
             return bacnetValueArray;
         }
-
-        public static int getScheduleType(string typeString)
-        {
-            int type = 0;
-            switch (typeString)
-            {
-                case "float": type = 68; break;
-                case "binary": type = 145; break;
-                case "int":  type = 33; break;
-            }
-            return type;
-        }
-
-        public static int getScheduleBytesToRead(string typeString)
-        {
-            int bytesToRead = 0;
-            switch (typeString)
-            {
-                case "float": bytesToRead = 10; break;
-                default: bytesToRead = 6; break;
-            }
-            return bytesToRead;
-        }
-
+        
         public static void writeValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic value, string format, bool reset)
         {
             var valueToWrite = getBacnetValue(bacnetObject, value, format, reset);
@@ -418,15 +206,11 @@ namespace Visu_dataviewer
             }
         }
 
-        #endregion
-
-        #region CoV
-
         public static void subscribeToAll()
         {
             var subscriber = new BackgroundWorker();
-            subscriber.DoWork += new DoWorkEventHandler(subscriber_DoWork);
-            subscriber.RunWorkerCompleted += new RunWorkerCompletedEventHandler(subscriber_RunWorkerCompleted);
+            subscriber.DoWork += new DoWorkEventHandler(Workers.Subscriber.Work);
+            subscriber.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Workers.Subscriber.Complete);
             subscriber.RunWorkerAsync();
         }
 
@@ -434,34 +218,13 @@ namespace Visu_dataviewer
         {
             try
             {
-                bacnet_client.SubscribeCOVRequest(bacnetDevice, bacnetObject, 0, false, false, _global.covLifetime);
+                bacnet_client.SubscribeCOVRequest(bacnetDevice, bacnetObject, 0, false, false, global.covLifetime);
             }
             catch (Exception ex)
             {
                 var failureReason = ex.ToString();
                 Log.Append("Subscription failed " + bacnetDevice.adr + " " + bacnetObject.type + " " + bacnetObject.instance + " Reason: " + failureReason);
             }
-        }
-
-        public static void subscriber_DoWork(object sender, DoWorkEventArgs e)
-        {
-            var table = _global.bigDatapointTable;
-            foreach (List<string> column in table)
-            {
-                var bacnetDevice = getBacnetDevice(column[(int)DatapointDefinition.columns.deviceIP], 1);
-                var bacnetObject = getBacnetObject(column[(int)DatapointDefinition.columns.objectType],  Convert.ToUInt16(column[(int)DatapointDefinition.columns.objectInstance]));
-                var cov = bool.Parse(column[(int)DatapointDefinition.columns.datapointCOV]);
-                
-                if (cov)
-                {
-                    subscribe(bacnetDevice, bacnetObject);
-                }
-            }
-        }
-
-        private static void subscriber_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            Log.Append("subscribe complete");
         }
 
         public static void handler_OnCOVNotification(BacnetClient sender, BacnetAddress bacnetDevice, byte invoke_id, uint subscriberProcessIdentifier, BacnetObjectId initiatingDeviceIdentifier, BacnetObjectId bacnetObject, uint timeRemaining, bool need_confirm, ICollection<BacnetPropertyValue> values, BacnetMaxSegments max_segments)
@@ -472,78 +235,7 @@ namespace Visu_dataviewer
             if (need_confirm)
                 sender.SimpleAckResponse(bacnetDevice, BacnetConfirmedServices.SERVICE_CONFIRMED_COV_NOTIFICATION, invoke_id);
         }
-   
-        #endregion
-
-        #region format / convert
-
-        public static string customTypeFromBacnetObjectType(BacnetObjectTypes objecttype)
-        {
-            switch (objecttype)
-            {
-                case BacnetObjectTypes.OBJECT_ANALOG_INPUT:
-                    return "AI";
-                case BacnetObjectTypes.OBJECT_ANALOG_OUTPUT:
-                    return "AO";
-                case BacnetObjectTypes.OBJECT_ANALOG_VALUE:
-                    return "AV";
-                case BacnetObjectTypes.OBJECT_BINARY_INPUT:
-                    return "BI";
-                case BacnetObjectTypes.OBJECT_BINARY_OUTPUT:
-                    return "BO";
-                case BacnetObjectTypes.OBJECT_BINARY_VALUE:
-                    return "BV";
-                case BacnetObjectTypes.OBJECT_MULTI_STATE_INPUT:
-                    return "MI";
-                case BacnetObjectTypes.OBJECT_MULTI_STATE_OUTPUT:
-                    return "MO";
-                case BacnetObjectTypes.OBJECT_MULTI_STATE_VALUE:
-                    return "MV";
-                case BacnetObjectTypes.OBJECT_POSITIVE_INTEGER_VALUE:
-                    return "PIV";
-            }
-
-            return "";
-        }
-
-        public static string convertToIP(BacnetAddress adr)
-        {
-            var address = adr.adr;
-            Array.Resize(ref address, 4);
-
-            return new System.Net.IPAddress(address).ToString();
-        }
-
-        public static BacnetAddress convertToIP2(BacnetAddress adr)
-        {
-
-            return (BacnetAddress)adr;
-        }
-
-        public static string formatValue(string value, string format)
-        {
-            var correctValue = "";
-            switch (format)
-
-            {
-                case "int":
-                    correctValue = Convert.ToInt32(double.Parse(value)).ToString();
-                    break;
-                case "uint":
-                    //correctValue = value[0] == '-' ? "0" : Convert.ToUInt32(double.Parse(value)).ToString();
-                    correctValue = Convert.ToUInt32(double.Parse(value)).ToString();
-                    break;
-                case "float":
-                    correctValue = Math.Round(double.Parse(value),3).ToString();
-                    break;
-                case "binary":
-                    correctValue = Convert.ToBoolean(double.Parse(value)).ToString();
-                    break;
-            }
-
-            return correctValue;
-        }
-
+        
         public static string convertToTime(string[] array)
         {
             var hour = array[0]; 
@@ -561,6 +253,119 @@ namespace Visu_dataviewer
             return value;
         }
 
-        #endregion
+
+
+        private static void tryToBeRecursive(byte[] scheduleArray, int counter, int bytesToRead, int type)
+        {
+            if (counter < scheduleArray.Length)
+            {
+                var item = scheduleArray[counter];
+                var stringToJoin = "";
+                switch (item)
+                {
+                    case 62:
+                        break;
+
+                    case 14:
+                        scheduleIsInDay = true;
+                        break;
+
+                    case 15:
+                        stringToJoin = (counter != scheduleArray.Length - 2) ? "DaySep" : "";
+                        scheduleIsInCommand = true;
+                        scheduleIsInDay = false;
+                        break;
+
+                    case 180:
+                        scheduleIsInCommand = true;
+                        var temp = "";
+                        while (scheduleActualBytesToRead != 0)
+
+                        {
+                            var actual = scheduleArray[counter + 1 + (bytesToRead - scheduleActualBytesToRead)].ToString();
+                            var separator = (scheduleActualBytesToRead != 1) ? ";" : "";
+                            temp += actual + separator;
+
+                            scheduleActualBytesToRead--;
+                        }
+
+                        var array = temp.Split(';');
+                        var time = convertToTime(array);
+                        var value = "";
+                        if (type == 68)
+                        {
+                            value = convertToSingle(array).ToString();
+                            //stringToJoin += time + ";" + type.ToString() + ";" + value;
+                        }
+                        else
+                        {
+                            value = array[5];
+                            //stringToJoin += time + ";" + type.ToString() + ";" + value;
+                            //stringToJoin += temp;
+                        }
+                        stringToJoin += time + ";" + type.ToString() + ";" + value;
+                        counter += 6;
+                        scheduleActualBytesToRead = bytesToRead;
+                        stringToJoin += "ProgSep";
+                        scheduleIsInCommand = false;
+                        break;
+
+                    case 63:
+                        stringToJoin = "";
+                        break;
+                }
+                schedule += stringToJoin;
+                tryToBeRecursive(scheduleArray, counter + 1, bytesToRead, type);
+                //return false;
+            }
+            // return true;
+        }
+
+        public static string callRecursion(byte[] array, int bytesToRead, int type)
+        {
+            scheduleActualBytesToRead = bytesToRead;
+            schedule = "";
+            tryToBeRecursive(array, 0, bytesToRead, type);
+            return schedule;
+        }
+
+        public static string readSchedule(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, string type)
+        {
+            try
+            {
+                byte[] byteValues = null;
+
+                bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_WEEKLY_SCHEDULE, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY, ref byteValues);
+                return callRecursion(byteValues, getScheduleBytesToRead(type), getScheduleType(type));
+            }
+            catch (Exception ex)
+            {
+                Log.Append(ex.Message);
+                return null;
+            }
+        }
+
+        public static int getScheduleType(string typeString)
+        {
+            int type = 0;
+            switch (typeString)
+            {
+                case "float": type = 68; break;
+                case "binary": type = 145; break;
+                case "int": type = 33; break;
+            }
+            return type;
+        }
+
+        public static int getScheduleBytesToRead(string typeString)
+        {
+            int bytesToRead = 0;
+            switch (typeString)
+            {
+                case "float": bytesToRead = 10; break;
+                default: bytesToRead = 6; break;
+            }
+            return bytesToRead;
+        }
     }
 }

@@ -8,17 +8,18 @@ using System.ComponentModel;
 using System.Windows.Forms;
 namespace Visu_dataviewer
 {
-    public static class _global
+    public static class global
     {
         public static string now;
         public static string path;
         public static uint covLifetime;
+        public static int pollInterval;
         public static List<List<string>> bigDatapointTable;
         
         public static string config;
         public static List<List<string>> dataTransfer;
         public static int cycleCounter = 1;
-        static _global()
+        static global()
         {
             bigDatapointTable = new List<List<string>>();
             now = DateTime.Now.ToString("yyyy.MM.dd HH.mm.ss");
@@ -45,37 +46,8 @@ namespace Visu_dataviewer
             string[] file = File.ReadAllLines(@"C:\Visu\config.cfg", Encoding.Default);
             path = file[0];
             covLifetime = uint.Parse(file[1]);
+            pollInterval = int.Parse(file[2]);
         }
-
-        public enum prop
-        {
-            datapointName,
-            datapointDescription,
-            datapointDatatype,
-            datapointSave,
-            datapointCOV,
-            deviceIP,
-            deviceInstance,
-            objectType,
-            objectInstance,
-            value,
-            activeText,
-            inactiveText,
-            stateText,
-            available,
-            dayMo,
-            dayTu,
-            dayWe,
-            dayTh,
-            dayFr,
-            daySa,
-            daySu
-        }
-
-        public static string normalizeNumber(string number, int len)
-        {
-            var ret = new string('0', len - number.Length) + number;
-            return ret;
-        }
+        
     }
 }

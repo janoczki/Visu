@@ -8,26 +8,17 @@ using System.Windows.Forms;
 
 namespace Visu_dataviewer
 {
-    
     public static class DatapointDefinition
     {
-        #region declaration
-
+        public static string[] header;
+        public static string[] content;
+        public static List<string> error = new List<string>();
         public enum columns
         {
             ID, datapointName, datapointDescription, datapointDatatype, datapointSave, datapointCOV, deviceIP, deviceInstance, objectType, objectInstance,
             txt00, txt01, txt02, txt03, txt04, txt05, txt06, txt07, txt08, txt09, txt10, txt11, txt12, txt13, txt14, txt15,
             value
         }
-
-        public static string[] header;
-        public static string[] content;
-
-        public static List<string> error = new List<string>();
-
-        #endregion
-
-        #region column check
 
         public static bool isTableUniquenessCorrect(string[] content)
         {
@@ -61,10 +52,6 @@ namespace Visu_dataviewer
             return true;
         }
 
-        #endregion
-
-        #region type check
-
         public static bool isTableTypeCorrect(string[] content)
         {
             foreach (string row in content)
@@ -97,10 +84,6 @@ namespace Visu_dataviewer
             return true;
         }
 
-        #endregion
-
-        #region stetetext check
-
         public static bool isTableStateTextCorrect(string[] content)
         {
             foreach (string row in content)
@@ -129,13 +112,11 @@ namespace Visu_dataviewer
             return true;
         }
 
-        #endregion
-
         public static void readfile()
         {
             try
             {
-                var file = File.ReadAllLines(_global.path + "\\datapoints.bacnetip", Encoding.Default).ToArray();
+                var file = File.ReadAllLines(global.path + "\\datapoints.bacnetip", Encoding.Default).ToArray();
                 content = file.Skip(1).ToArray();
                 var head = file[0] + ";Value";
                 header = head.Split(';');
@@ -146,11 +127,6 @@ namespace Visu_dataviewer
                 header = null;
                 MessageBox.Show("The file defining Bacnet IP objects doesn't exist.");
             }
-        }
-
-        public static void readHeder()
-        {
-
         }
 
         public static string[] getTable()

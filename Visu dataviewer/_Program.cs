@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace Visu_dataviewer
 {
-    static class Program
+    static class _Program
     {
         /// <summary>
         /// The main entry point for the application.

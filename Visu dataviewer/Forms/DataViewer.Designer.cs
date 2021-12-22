@@ -29,32 +29,16 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.onlineButton = new System.Windows.Forms.Button();
             this.pollingTimer = new System.Windows.Forms.Timer(this.components);
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fájlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.megnyitásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bezárásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.sqlConnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UItimer = new System.Windows.Forms.Timer(this.components);
             this.covSubscriptionTimer = new System.Windows.Forms.Timer(this.components);
-            this.pollingButton = new System.Windows.Forms.Button();
-            this.pollingIntervalTextbox = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.subscribeButton = new System.Windows.Forms.Button();
             this.listView1 = new Visu_dataviewer.DoubleBufferedListView();
             this.menu.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // onlineButton
-            // 
-            this.onlineButton.Location = new System.Drawing.Point(12, 518);
-            this.onlineButton.Name = "onlineButton";
-            this.onlineButton.Size = new System.Drawing.Size(75, 23);
-            this.onlineButton.TabIndex = 1;
-            this.onlineButton.Text = "Online";
-            this.onlineButton.UseVisualStyleBackColor = true;
-            this.onlineButton.Click += new System.EventHandler(this.onlineButton_Click);
             // 
             // pollingTimer
             // 
@@ -74,8 +58,7 @@
             // 
             this.fájlToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.megnyitásToolStripMenuItem,
-            this.bezárásToolStripMenuItem,
-            this.sqlConnectToolStripMenuItem});
+            this.bezárásToolStripMenuItem});
             this.fájlToolStripMenuItem.Name = "fájlToolStripMenuItem";
             this.fájlToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
             this.fájlToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
@@ -85,7 +68,7 @@
             // 
             this.megnyitásToolStripMenuItem.Name = "megnyitásToolStripMenuItem";
             this.megnyitásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.megnyitásToolStripMenuItem.Text = "Open";
             this.megnyitásToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
@@ -93,16 +76,9 @@
             // 
             this.bezárásToolStripMenuItem.Name = "bezárásToolStripMenuItem";
             this.bezárásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
-            this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.bezárásToolStripMenuItem.Text = "Quit";
             this.bezárásToolStripMenuItem.Click += new System.EventHandler(this.QuitToolStripMenuItem_Click);
-            // 
-            // sqlConnectToolStripMenuItem
-            // 
-            this.sqlConnectToolStripMenuItem.Name = "sqlConnectToolStripMenuItem";
-            this.sqlConnectToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
-            this.sqlConnectToolStripMenuItem.Text = "Sql connect";
-            this.sqlConnectToolStripMenuItem.Click += new System.EventHandler(this.sqlConnectToolStripMenuItem_Click);
             // 
             // UItimer
             // 
@@ -112,47 +88,6 @@
             // covSubscriptionTimer
             // 
             this.covSubscriptionTimer.Tick += new System.EventHandler(this.covSubscriptionTimer_Tick);
-            // 
-            // pollingButton
-            // 
-            this.pollingButton.Enabled = false;
-            this.pollingButton.Location = new System.Drawing.Point(12, 576);
-            this.pollingButton.Name = "pollingButton";
-            this.pollingButton.Size = new System.Drawing.Size(75, 23);
-            this.pollingButton.TabIndex = 3;
-            this.pollingButton.Text = "Start polling";
-            this.pollingButton.UseVisualStyleBackColor = true;
-            this.pollingButton.Click += new System.EventHandler(this.pollingButton_Click);
-            // 
-            // pollingIntervalTextbox
-            // 
-            this.pollingIntervalTextbox.Location = new System.Drawing.Point(93, 578);
-            this.pollingIntervalTextbox.Name = "pollingIntervalTextbox";
-            this.pollingIntervalTextbox.Size = new System.Drawing.Size(49, 20);
-            this.pollingIntervalTextbox.TabIndex = 4;
-            this.pollingIntervalTextbox.Text = "5";
-            this.pollingIntervalTextbox.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(148, 581);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(53, 13);
-            this.label1.TabIndex = 5;
-            this.label1.Text = "second(s)";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // subscribeButton
-            // 
-            this.subscribeButton.Enabled = false;
-            this.subscribeButton.Location = new System.Drawing.Point(12, 547);
-            this.subscribeButton.Name = "subscribeButton";
-            this.subscribeButton.Size = new System.Drawing.Size(75, 23);
-            this.subscribeButton.TabIndex = 6;
-            this.subscribeButton.Text = "Subscribe";
-            this.subscribeButton.UseVisualStyleBackColor = true;
-            this.subscribeButton.Click += new System.EventHandler(this.subscribeButton_Click);
             // 
             // listView1
             // 
@@ -170,11 +105,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1912, 630);
-            this.Controls.Add(this.subscribeButton);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.pollingIntervalTextbox);
-            this.Controls.Add(this.pollingButton);
-            this.Controls.Add(this.onlineButton);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.menu);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
@@ -191,7 +121,6 @@
         }
 
         #endregion
-        private System.Windows.Forms.Button onlineButton;
         private System.Windows.Forms.Timer pollingTimer;
         private System.Windows.Forms.MenuStrip menu;
         private System.Windows.Forms.ToolStripMenuItem fájlToolStripMenuItem;
@@ -199,11 +128,6 @@
         private System.Windows.Forms.ToolStripMenuItem bezárásToolStripMenuItem;
         public System.Windows.Forms.Timer UItimer;
         private System.Windows.Forms.Timer covSubscriptionTimer;
-        private System.Windows.Forms.Button pollingButton;
-        private System.Windows.Forms.TextBox pollingIntervalTextbox;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button subscribeButton;
-        private System.Windows.Forms.ToolStripMenuItem sqlConnectToolStripMenuItem;
         public DoubleBufferedListView listView1;
     }
 }

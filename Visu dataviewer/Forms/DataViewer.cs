@@ -23,12 +23,10 @@ namespace Visu_dataviewer
         {
             InitializeComponent();
         }
-
-
-
+        
         private void DataViewer_Load(object sender, EventArgs e)
         {
-            _global.ini();
+            global.ini();
             Log.Append("Application start");
         }
 
@@ -69,7 +67,7 @@ namespace Visu_dataviewer
                 foreach (string row in datapointTable)
                 {
                     var datapoint = (row + ";").Split(';');
-                    _global.bigDatapointTable.Add(datapoint.ToList());
+                    global.bigDatapointTable.Add(datapoint.ToList());
                     Datapoints.table.Add(datapoint.ToList());
                     listView1.Items.Add(new ListViewItem(datapoint));
                 }
@@ -82,23 +80,18 @@ namespace Visu_dataviewer
             Log.Append("Quit application");
             Application.Exit();
         }
-
-
-
-
-
-
+        
         private void startProgress()
         {
             startBacnet();
             Log.Append("Online mode");
-            covSubscriptionTimer.Interval = Convert.ToInt32((_global.covLifetime - 1) * 1000);
+            covSubscriptionTimer.Interval = Convert.ToInt32((global.covLifetime - 1) * 1000);
             covSubscriptionTimer.Enabled = true;
             Bac.subscribeToAll();
             Log.Append("Subscription started");
-            pollingTimer.Interval = int.Parse(pollingIntervalTextbox.Text) * 1000;
+            pollingTimer.Interval = global.pollInterval;
             pollingTimer.Enabled = true;
-            Bac.readAllValue();
+            Bac.readAll();
             Log.Append("Pollings started");
         }
 
@@ -109,20 +102,13 @@ namespace Visu_dataviewer
             Log.Append("Resubscription finished");
         }
 
-        private void onlineButton_Click(object sender, EventArgs e)
-        {
-            startBacnet();
-            Log.Append("Online mode");
-            UItimer.Enabled = true;
-            pollingButton.Enabled = true;
-            subscribeButton.Enabled = true;
-        }
+
 
         private void subscribeButton_Click(object sender, EventArgs e)
         {
             Bac.subscribeToAll();
             Log.Append("Subscription started");
-            covSubscriptionTimer.Interval = Convert.ToInt32((_global.covLifetime - 1) * 1000);
+            covSubscriptionTimer.Interval = Convert.ToInt32((global.covLifetime - 1) * 1000);
             covSubscriptionTimer.Enabled = true;
         }
 
@@ -133,7 +119,7 @@ namespace Visu_dataviewer
 
         private void pollingTimer_Tick(object sender, EventArgs e)
         {
-            Bac.readAllValue();
+            Bac.readAll();
         }
 
         private void UITimer_Tick(object sender, EventArgs e)
@@ -144,89 +130,37 @@ namespace Visu_dataviewer
             }
         }
 
-        private void pollingButton_Click(object sender, EventArgs e)
+        
+        private bool openReaderWriter(ListViewItem selected)
         {
-            if (pollingButton.Text == "Start polling")
-            {
-                pollingButton.Text = "Stop polling";
-                Log.Append("Start polling");
-                pollingTimer.Interval = int.Parse(pollingIntervalTextbox.Text) * 1000;
-                pollingTimer.Enabled = true;
-                Bac.readAllValue();
-            }
-            else
-            {
-                pollingButton.Text = "Start polling";
-                Log.Append("Stop polling");
-                pollingTimer.Enabled = false;
-            }
+            var rw = Application.OpenForms["ReaderWriter"] as ReaderWriter;
+            if (rw == null) rw = new ReaderWriter();
+            rw.transferData(selected);
+            rw.Show();
+            return true;
         }
 
-        private void openReaderWriter(ListViewItem selected)
+        private bool openScheduleReaderWriter(ListViewItem selected)
         {
-            var readerwriter = Application.OpenForms["ReaderWriter"] as ReaderWriter;
-            if (readerwriter == null)
-                readerwriter = new ReaderWriter();
-            readerwriter.transferData(selected);
-            readerwriter.Show();
+            var srw = Application.OpenForms["ScheduleReaderWriter"] as ScheduleReaderWriter;
+            if (srw == null) srw = new ScheduleReaderWriter();
+            srw.transferData(selected);
+            var actionType = selected.SubItems[(int)DatapointDefinition.columns.txt01].Text == "" ? "value" : "enum";
+            var possibleCommands = srw.collectPossibleCommands(selected);
+            srw.addHeaders(actionType, possibleCommands);
+            var schedule = srw.parseSchedule(selected);
+            srw.representSchedule(schedule);
+            srw.Show();
+            return true;
         }
-
-        private void openScheduleReaderWriter(ListViewItem selected)
-        {
-            var schedulereaderwriter = Application.OpenForms["ScheduleReaderWriter"] as ScheduleReaderWriter;
-            if (schedulereaderwriter == null)
-                schedulereaderwriter = new ScheduleReaderWriter();
-            schedulereaderwriter.transferData(selected);
-            var schedule = schedulereaderwriter.parseSchedule(selected);
-            schedulereaderwriter.Show();
-        }
-
-        private List<string> collectWeeklyScheduleByTimeAndCommand(List<string> week)
-        {
-            var timeAndCommands = new List<string>();
-
-            foreach (string day in week)
-            {
-                var evs = day.Split(',');
-                foreach (string ev in evs)
-                {
-                    if (ev != "")
-                    {
-                        if (!timeAndCommands.Contains(ev))
-                        {
-                            timeAndCommands.Add(ev);
-                        }
-                        
-                    }
-                    
-                }
-            }
-
-
-
-
-
-
-            return timeAndCommands;
-        }
-
+        
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             var selected = listView1.SelectedItems[0];
-            if (selected.SubItems[(int)DatapointDefinition.columns.objectType].Text == "SC")
-            {
-                openScheduleReaderWriter(selected);
-            }
-            else
-            {
-                openReaderWriter(selected);
-            }
-            
+            var isSchedule = selected.SubItems[(int)DatapointDefinition.columns.objectType].Text == "SC";
+            var operation = isSchedule ? openScheduleReaderWriter(selected) : openReaderWriter(selected);
         }
 
-        private void sqlConnectToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Sql.connect();
-        }
+
     }
 }
