@@ -27,7 +27,9 @@ namespace Visu_dataviewer.Workers
 
                 if (poll)
                 {
-                    var value = Bac.read(bacnetDevice, bacnetObject);
+                    var obj = new BacnetObjects.NormalObject(bacnetDevice, bacnetObject);
+                    var value = obj.Read();
+                    //var value = Bac.read(bacnetDevice, bacnetObject);
                     Datapoints.record(bacnetDevice, bacnetObject, value);
                 }
             }

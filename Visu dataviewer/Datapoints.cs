@@ -21,21 +21,14 @@ namespace Visu_dataviewer
             foreach (var row in table)
             {
                 var actualBacnetDev = Bac.getBacnetDevice(row[(int)DatapointDefinition.columns.deviceIP], 1);
-                var actualBacnetObj = Bac.getBacnetObject(row[(int)DatapointDefinition.columns.objectType], Convert.ToUInt16(row[(int)DatapointDefinition.columns.objectInstance]));
+                var actualBacnetObj = Bac.getBacnetObject(row[(int)DatapointDefinition.columns.objectType], 
+                    Convert.ToUInt16(row[(int)DatapointDefinition.columns.objectInstance]));
 
-                var deviceMatch = actualBacnetDev.Equals(bacnetDevice) ? true : false;
-                var objectMatch = actualBacnetObj.Equals(bacnetObject) ? true : false;
-                var datapointValue = table[table.IndexOf(row)][(int)DatapointDefinition.columns.value];
-
-                if (deviceMatch & objectMatch)
+                if (actualBacnetDev.Equals(bacnetDevice) & actualBacnetObj.Equals(bacnetObject))
                 {
-                    datapointValue = value;
-                    var index = table.IndexOf(row);
                     table[table.IndexOf(row)][(int)DatapointDefinition.columns.value] = value;
                     break;
                 }
-
-
             }
         }
     }

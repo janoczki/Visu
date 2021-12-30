@@ -7,7 +7,6 @@ using System.IO;
 using System.ComponentModel;
 using System.Timers;
 
-
 namespace Visu_dataviewer
 {
     public static class Log
@@ -19,7 +18,7 @@ namespace Visu_dataviewer
             logMessages = new List<string>();
             Timer logWriterTimer = new Timer();
             logWriterTimer.Elapsed += new ElapsedEventHandler(writeLogFile);
-            logWriterTimer.Interval = 1000;
+            logWriterTimer.Interval = 50;
             logWriterTimer.Enabled = true;
         }
 

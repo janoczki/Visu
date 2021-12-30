@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO.BACnet;
-//using System.Threading;
 using System.Windows.Forms;
 using System.ComponentModel;
-using System.Timers;
-using System.IO.BACnet.Serialize;
-using System.Globalization;
 
 namespace Visu_dataviewer
 {
@@ -19,7 +13,6 @@ namespace Visu_dataviewer
         public static bool scheduleIsInCommand;
         public static int scheduleActualBytesToRead = 0;
         public static bool scheduleIsInDay;
-        public static bool availabilityCheckComplete = false;
         public static List<string> error = new List<string>();
         public static Dictionary<string, BacnetObjectTypes> BacnetObject;
         public static BacnetClient bacnet_client;
@@ -63,13 +56,6 @@ namespace Visu_dataviewer
             BacnetAddress bacnetDev = new BacnetAddress(BacnetAddressTypes.IP, ipAddress, networkNumber);
             return bacnetDev;
         }
-
-        public static string decodePresentValue(IList<BacnetValue> NoScalarValue)
-        {
-            BacnetValue Value;
-            Value = NoScalarValue[0];
-            return Value.Value != null ? Value.Value.ToString() : "null";
-        }
         
         public static void readAll()
         {
@@ -78,95 +64,7 @@ namespace Visu_dataviewer
             reader.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Workers.Reader.Complete);
             reader.RunWorkerAsync();
         }
-        
-        public static string read(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject)
-        {
-            try
-            {
-                IList<BacnetValue> Values;
-                bacnet_client.ReadPropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, out Values);
-                return decodePresentValue(Values);
-            }
-            catch (Exception ex)
-            {
-                Log.Append(ex.Message);
-            }
-            return null;
-        }
-
-        public static void writeSchedule(ushort networkNumber, string deviceIP, uint deviceInstance, string objectType, uint objectInstance, byte[] value)
-        {
-            var bacnetDevice = getBacnetDevice(deviceIP, networkNumber);
-            var bacnetObject = getBacnetObject(objectType, objectInstance);
-            var bacnetProperty = BacnetPropertyIds.PROP_WEEKLY_SCHEDULE;
-
-            var InOutBuffer = value;
-            //var InOutBuffer = new byte[] {
-            //    62,
-            //    14,15, //hétfő
-            //    14,180,2,2,2,2,145,0,15, //kedd
-            //    14,180,3,3,3,3,145,0,180,3,3,3,4,145,1,15, //szerda
-            //    14,180,4,4,4,4,145,0,15, //csütörtök
-            //    14,180,5,5,5,5,145,0,15, //péntek
-            //    14,180,6,6,6,6,145,0,15, //szombat
-            //    14,180,7,7,7,7,145,0,15, //vasárnap
-            //    63 };
-
-            bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(bacnetDevice, bacnetObject, bacnetProperty, BacnetConfirmedServices.SERVICE_CONFIRMED_WRITE_PROPERTY, ref InOutBuffer);
-
-        }
-
-        public static void writeBoolValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic valueToBeWritten)
-        {
-            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten) };
-            bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
-            bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_ENUMERATED;
-            try
-            {
-                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, bacnetValueToBeWritten);
-            }
-            catch (Exception e)
-            {
-                var err = (e.Message == "Error from device: ERROR_CLASS_PROPERTY - ERROR_CODE_WRITE_ACCESS_DENIED") ? "Readonly" : e.Message;
-                MessageBox.Show(err);
-            }
-        }
-
-        public static void writeIntValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic valueToBeWritten)
-        {
-            BacnetValue[] bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten) };
-            bacnetValueToBeWritten[0].Value = Convert.ToUInt32(bacnetValueToBeWritten[0].Value);
-            bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_UNSIGNED_INT;
-            try
-            {
-                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, bacnetValueToBeWritten);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }
-        }
-
-        public static void writeFloatValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic valueToBeWritten)
-        {
-            var bacnetValueToBeWritten = new BacnetValue[] { new BacnetValue(valueToBeWritten)};
-            var reset = new BacnetValue[] { new BacnetValue(null) };
-            if (valueToBeWritten != "null")
-            {
-                bacnetValueToBeWritten[0].Value = Convert.ToSingle(bacnetValueToBeWritten[0].Value);
-                bacnetValueToBeWritten[0].Tag = BacnetApplicationTags.BACNET_APPLICATION_TAG_REAL;
-            }
-            var realValueToBeWritten = valueToBeWritten == "null" ? reset : bacnetValueToBeWritten;
-            try
-            {
-                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, realValueToBeWritten);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }
-        }
-
+       
         public static BacnetValue[] getBacnetValue(BacnetObjectId bacnetObject, string value, string format, bool reset)
         {
             var bacnetValueArray = new BacnetValue[] {new BacnetValue()};
@@ -191,19 +89,6 @@ namespace Visu_dataviewer
             }
 
             return bacnetValueArray;
-        }
-        
-        public static void writeValue(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, dynamic value, string format, bool reset)
-        {
-            var valueToWrite = getBacnetValue(bacnetObject, value, format, reset);
-            try
-            {
-                bacnet_client.WritePropertyRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_PRESENT_VALUE, valueToWrite);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }
         }
 
         public static void subscribeToAll()
@@ -252,8 +137,6 @@ namespace Visu_dataviewer
             var value = BitConverter.ToSingle(tempbytearray, 0);
             return value;
         }
-
-
 
         private static void tryToBeRecursive(byte[] scheduleArray, int counter, int bytesToRead, int type)
         {
@@ -316,9 +199,7 @@ namespace Visu_dataviewer
                 }
                 schedule += stringToJoin;
                 tryToBeRecursive(scheduleArray, counter + 1, bytesToRead, type);
-                //return false;
             }
-            // return true;
         }
 
         public static string callRecursion(byte[] array, int bytesToRead, int type)
@@ -334,7 +215,6 @@ namespace Visu_dataviewer
             try
             {
                 byte[] byteValues = null;
-
                 bacnet_client.RawEncodedDecodedPropertyConfirmedRequest(bacnetDevice, bacnetObject, BacnetPropertyIds.PROP_WEEKLY_SCHEDULE, BacnetConfirmedServices.SERVICE_CONFIRMED_READ_PROPERTY, ref byteValues);
                 return callRecursion(byteValues, getScheduleBytesToRead(type), getScheduleType(type));
             }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.BACnet;
+using Visu_dataviewer.Bacnet_objects;
 namespace Visu_dataviewer
 {
     
@@ -18,7 +19,6 @@ namespace Visu_dataviewer
         public ScheduleReaderWriter()
         {
             InitializeComponent();
-
         }
 
         public void transferData(ListViewItem selected)
@@ -36,8 +36,8 @@ namespace Visu_dataviewer
 
         public void representSchedule(List<List<string>> schedule)
         {
-            var isEnum = selected.SubItems[(int)DatapointDefinition.columns.datapointDatatype].Text == "float" ? false : true;
-            foreach (string command in normalizedScheduleEvents(collectScheduleCommands(schedule), isEnum))
+            var isEnum = selected.SubItems[(int)DatapointDefinition.columns.txt01].Text == "" ? false : true;
+            foreach (string command in normalizeScheduleEvents(collectScheduleCommands(schedule), isEnum))
             {
                 var parsedCommand = command.Split(';');
                 dataGridView2.Rows.Add(parsedCommand);
@@ -49,12 +49,12 @@ namespace Visu_dataviewer
             var possibleCommands = new List<string>();
             for (int i = (int)DatapointDefinition.columns.txt00; i < (int)DatapointDefinition.columns.txt15; i++)
             {
-                    possibleCommands.Add(selected.SubItems[i].Text);
+                possibleCommands.Add(selected.SubItems[i].Text);
             }
             return possibleCommands;
         }
 
-        public List<string> normalizedScheduleEvents(List<string> commands, bool isEnum)
+        public List<string> normalizeScheduleEvents(List<string> commands, bool isEnum)
         {
             var normalizedScheduleEvents = new List<string>();
             foreach (string command in commands)
@@ -72,6 +72,7 @@ namespace Visu_dataviewer
 
         public List<string> collectScheduleCommands(List<List<string>> schedule)
         {
+            
             var commands = new List<string>();
             foreach(List<string> day in schedule)
             {
@@ -128,5 +129,7 @@ namespace Visu_dataviewer
         {
             MessageBox.Show(e.Exception.Message);
         }
+
+
     }
 }

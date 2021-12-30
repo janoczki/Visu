@@ -66,6 +66,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bac.cs" />
+    <Compile Include="BacnetObjects\NormalObject.cs" />
+    <Compile Include="BacnetObjects\ScheduleObject.cs" />
     <Compile Include="DatapointDefinition.cs" />
     <Compile Include="Datapoints.cs" />
     <Compile Include="Forms\DataViewer.cs">
@@ -94,7 +96,6 @@
     <Compile Include="Workers\Subscriber.cs" />
     <Compile Include="_Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScheduleObject.cs" />
     <Compile Include="Forms\ScheduleReaderWriter.cs">
       <SubType>Form</SubType>
     </Compile>

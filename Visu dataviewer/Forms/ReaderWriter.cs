@@ -50,7 +50,8 @@ namespace Visu_dataviewer
             var bacnetObject = Bac.getBacnetObject(objTypeLabel.Text, Convert.ToUInt16(objInstLabel.Text));
             var value = valueToWriteTextbox.Text;
             var format = typeLabel.Text;
-            Bac.writeValue(bacnetDevice, bacnetObject, value, format, false);
+            var obj = new BacnetObjects.NormalObject(bacnetDevice, bacnetObject);
+            obj.Write(value, format, false);
         }
 
         private void resetButton_Click(object sender, EventArgs e)
@@ -59,7 +60,8 @@ namespace Visu_dataviewer
             var bacnetObject = Bac.getBacnetObject(objTypeLabel.Text, Convert.ToUInt16(objInstLabel.Text));
             var format = typeLabel.Text;
             var value = valueToWriteTextbox.Text;
-            Bac.writeValue(bacnetDevice, bacnetObject, value, format, true);
+            var obj = new BacnetObjects.NormalObject(bacnetDevice, bacnetObject);
+            obj.Write("0", format, true);
         }
     }
 }

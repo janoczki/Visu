@@ -9,16 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Timers;
+using System.IO.BACnet;
 namespace Visu_dataviewer
 {
     public partial class DataViewer : Form
     {
-        // UNDONE Egyedi polling időzítés lehetőség, nem thread safe, így elvetve
-        // TODO logolás indításra
-        // TODO logolás leállásra
-        // TODO logolás hibára
-        // TODO adatvalidálások (adatpont fájl, config fájl, idők)
-
         public DataViewer()
         {
             InitializeComponent();
@@ -33,7 +28,7 @@ namespace Visu_dataviewer
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             addContentToListview();
-            UItimer.Enabled = true;
+            resizeListViewColumns();
             startProgress();
         }
 
@@ -43,19 +38,6 @@ namespace Visu_dataviewer
             {
                 listView1.Columns.Add(header, 1, HorizontalAlignment.Center);
             }
-        }
-
-        private string openProjectDirectory()
-        {
-            using (var folderBrowserDialog = new FolderBrowserDialog())
-            {
-                DialogResult result = folderBrowserDialog.ShowDialog();
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
-                {
-                    return folderBrowserDialog.SelectedPath;
-                }
-            }
-            return null;
         }
 
         public void addContentToListview()
@@ -74,6 +56,14 @@ namespace Visu_dataviewer
             }
         }
 
+        public void resizeListViewColumns()
+        {
+            for (int i = (int)DatapointDefinition.columns.txt00;i < (int)DatapointDefinition.columns.value; i++)
+            {
+                listView1.Columns[i].Width = 0;
+            }
+        }
+
         private void QuitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Log.Append("Quit application");
@@ -82,38 +72,19 @@ namespace Visu_dataviewer
         
         private void startProgress()
         {
-            startBacnet();
-            Log.Append("Online mode");
+            UItimer.Enabled = true;
+            Bac.startActivity("192.168.1.77");
             covSubscriptionTimer.Interval = Convert.ToInt32((global.covLifetime - 1) * 1000);
             covSubscriptionTimer.Enabled = true;
             Bac.subscribeToAll();
-            Log.Append("Subscription started");
             pollingTimer.Interval = global.pollInterval;
             pollingTimer.Enabled = true;
             Bac.readAll();
-            Log.Append("Pollings started");
         }
 
         private void covSubscriptionTimer_Tick(object sender, EventArgs e)
         {
-            Log.Append("Resubscription started");
             Bac.subscribeToAll();
-            Log.Append("Resubscription finished");
-        }
-
-
-
-        private void subscribeButton_Click(object sender, EventArgs e)
-        {
-            Bac.subscribeToAll();
-            Log.Append("Subscription started");
-            covSubscriptionTimer.Interval = Convert.ToInt32((global.covLifetime - 1) * 1000);
-            covSubscriptionTimer.Enabled = true;
-        }
-
-        private bool startBacnet()
-        {
-            return Bac.startActivity("192.168.1.77");
         }
 
         private void pollingTimer_Tick(object sender, EventArgs e)
@@ -128,7 +99,6 @@ namespace Visu_dataviewer
                 listView1.Items[Datapoints.table.IndexOf(row)].SubItems[(int)DatapointDefinition.columns.value].Text = row[(int)DatapointDefinition.columns.value];
             }
         }
-
         
         private bool openReaderWriter(ListViewItem selected)
         {
@@ -160,6 +130,9 @@ namespace Visu_dataviewer
             var operation = isSchedule ? openScheduleReaderWriter(selected) : openReaderWriter(selected);
         }
 
-
+        private void DataViewer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Log.Append("Application stop");
+        }
     }
 }

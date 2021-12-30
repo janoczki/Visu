@@ -50,7 +50,7 @@
             this.fájlToolStripMenuItem});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
-            this.menu.Size = new System.Drawing.Size(1912, 24);
+            this.menu.Size = new System.Drawing.Size(1081, 24);
             this.menu.TabIndex = 2;
             this.menu.Text = "menuStrip1";
             // 
@@ -68,7 +68,7 @@
             // 
             this.megnyitásToolStripMenuItem.Name = "megnyitásToolStripMenuItem";
             this.megnyitásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.megnyitásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.megnyitásToolStripMenuItem.Text = "Open";
             this.megnyitásToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
@@ -76,7 +76,7 @@
             // 
             this.bezárásToolStripMenuItem.Name = "bezárásToolStripMenuItem";
             this.bezárásToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
-            this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.bezárásToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.bezárásToolStripMenuItem.Text = "Quit";
             this.bezárásToolStripMenuItem.Click += new System.EventHandler(this.QuitToolStripMenuItem_Click);
             // 
@@ -94,7 +94,7 @@
             this.listView1.FullRowSelect = true;
             this.listView1.Location = new System.Drawing.Point(12, 27);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1888, 475);
+            this.listView1.Size = new System.Drawing.Size(1057, 368);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -104,7 +104,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1912, 630);
+            this.ClientSize = new System.Drawing.Size(1081, 407);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.menu);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
@@ -112,6 +112,7 @@
             this.MaximizeBox = false;
             this.Name = "DataViewer";
             this.Text = "DataViewer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataViewer_FormClosing);
             this.Load += new System.EventHandler(this.DataViewer_Load);
             this.menu.ResumeLayout(false);
             this.menu.PerformLayout();

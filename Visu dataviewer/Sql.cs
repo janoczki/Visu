@@ -24,6 +24,10 @@ namespace Visu_dataviewer
             builder.DataSource = "ANDRASGEP\\SQLEXPRESS";
             builder.UserID = "sa";
             builder.Password = "Sauter12345";
+            var dataTransferTimer = new Timer();
+            dataTransferTimer.Interval = 2000;
+            dataTransferTimer.Tick += new EventHandler(dataTransferTimer_Tick);
+            dataTransferTimer.Enabled = true;
         }
 
         public static void connect()
@@ -88,6 +92,15 @@ namespace Visu_dataviewer
             return "";
         }
 
+        private static void dataTransferTimer_Tick(Object myObject, EventArgs myEventArgs)
+        {
+            var count = dataTransfer.Count;
+            if (count > 0)
+            {
+                Sql.writeList(dataTransfer, count);
+                dataTransfer.RemoveRange(0, count);
+            }
+        }
 
     }
 }
