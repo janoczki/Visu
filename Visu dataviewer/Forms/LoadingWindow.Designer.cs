@@ -1,4 +1,4 @@
-﻿namespace Visu_dataviewer
+﻿namespace Visu_dataviewer.Forms
 {
     partial class LoadingWindow
     {

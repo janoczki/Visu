@@ -9,26 +9,24 @@ namespace Visu_dataviewer
 {
     public static class Datapoints
     {
-        public static List<List<string>> table;
-
+        public static List<List<string>> Table;
+        
         static Datapoints()
         {
-            table = new List<List<string>>();
+            Table = new List<List<string>>();
         }
 
-        public static void record(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, string value)
+        public static void Record(BacnetAddress bacnetDevice, BacnetObjectId bacnetObject, string value)
         {
-            foreach (var row in table)
+            foreach (var row in Table)
             {
-                var actualBacnetDev = Bac.getBacnetDevice(row[(int)DatapointDefinition.columns.deviceIP], 1);
-                var actualBacnetObj = Bac.getBacnetObject(row[(int)DatapointDefinition.columns.objectType], 
-                    Convert.ToUInt16(row[(int)DatapointDefinition.columns.objectInstance]));
+                var actualBacnetDev = Bac.GetBacnetDevice(row[(int)DatapointDefinition.Columns.DeviceIp], 1);
+                var actualBacnetObj = Bac.GetBacnetObject(row[(int)DatapointDefinition.Columns.ObjectType], 
+                    Convert.ToUInt16(row[(int)DatapointDefinition.Columns.ObjectInstance]));
 
-                if (actualBacnetDev.Equals(bacnetDevice) & actualBacnetObj.Equals(bacnetObject))
-                {
-                    table[table.IndexOf(row)][(int)DatapointDefinition.columns.value] = value;
-                    break;
-                }
+                if (!(actualBacnetDev.Equals(bacnetDevice) & actualBacnetObj.Equals(bacnetObject))) continue;
+                Table[Table.IndexOf(row)][(int)DatapointDefinition.Columns.Value] = value;
+                break;
             }
         }
     }

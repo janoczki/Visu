@@ -1,127 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO.BACnet;
-using Visu_dataviewer.Bacnet_objects;
-namespace Visu_dataviewer
+using Visu_dataviewer.BacnetObjects;
+using System.Globalization;
+namespace Visu_dataviewer.Forms
 {
     
     public partial class ScheduleReaderWriter : Form
     {
-        public ListViewItem selected;
-
-        public ScheduleReaderWriter()
+        private ListViewItem Selected { get; set; }
+        private List<List<string>> Schedule { get; set; }
+        private List<string> Actions { get; set; }
+        private List<string> PossibleCommands { get; set; }
+        private List<string> CommandsForGui { get; set; }
+        private string Type { get; set; }
+        public ScheduleReaderWriter(ListViewItem selected, List<List<string>> schedule, List<string> actions, List<string> possibleCommands, string type)
         {
             InitializeComponent();
+            this.Selected = selected;
+            this.Schedule = schedule;
+            this.Actions = actions;
+            this.PossibleCommands = possibleCommands;
+            this.CommandsForGui = getPossibleCommandsForGUI();
+            this.Type = type;
+            AddColumns();
         }
-
-        public void transferData(ListViewItem selected)
-        {
-            this.selected = selected;
-        }
-
-        public string readSchedule(ListViewItem selected)
-        {
-            var bacnetDevice = Bac.getBacnetDevice(selected.SubItems[(int)DatapointDefinition.columns.deviceIP].Text, 1);
-            var bacnetObject = Bac.getBacnetObject(selected.SubItems[(int)DatapointDefinition.columns.objectType].Text, Convert.ToUInt16(selected.SubItems[(int)DatapointDefinition.columns.objectInstance].Text));
-            var type = selected.SubItems[(int)DatapointDefinition.columns.datapointDatatype].Text;
-            return Bac.readSchedule(bacnetDevice, bacnetObject, type);
-        }
-
-        public void representSchedule(List<List<string>> schedule)
-        {
-            var isEnum = selected.SubItems[(int)DatapointDefinition.columns.txt01].Text == "" ? false : true;
-            foreach (string command in normalizeScheduleEvents(collectScheduleCommands(schedule), isEnum))
-            {
-                var parsedCommand = command.Split(';');
-                dataGridView2.Rows.Add(parsedCommand);
-            }
-        }
-
-        public List<string> collectPossibleCommands(ListViewItem selected)
-        {
-            var possibleCommands = new List<string>();
-            for (int i = (int)DatapointDefinition.columns.txt00; i < (int)DatapointDefinition.columns.txt15; i++)
-            {
-                possibleCommands.Add(selected.SubItems[i].Text);
-            }
-            return possibleCommands;
-        }
-
-        public List<string> normalizeScheduleEvents(List<string> commands, bool isEnum)
-        {
-            var normalizedScheduleEvents = new List<string>();
-            foreach (string command in commands)
-            {
-                var data = command.Split(';');
-                var hour = new String('0', 2 - data[0].Length) + data[0];
-                var minute = new String('0', 2 - data[1].Length) + data[1];
-                var second = new String('0', 2 - data[2].Length) + data[2];
-                var millisecond = new String('0', 3 - data[3].Length) + data[3];
-                var value = isEnum ? collectPossibleCommands(selected)[int.Parse(data[5])] : data[5];
-                normalizedScheduleEvents.Add(hour + " : " + minute + " : " + second + " : " + millisecond + ";" + value);
-            }
-            return normalizedScheduleEvents;
-        }
-
-        public List<string> collectScheduleCommands(List<List<string>> schedule)
-        {
-            
-            var commands = new List<string>();
-            foreach(List<string> day in schedule)
-            {
-                foreach (string command in day)
-                {
-                    if (!commands.Contains(command))
-                        commands.Add(command);
-                }
-            }
-            return commands;
-        }
-
-        public List<List<string>> parseSchedule(ListViewItem selected)
-        {
-            var schedule = readSchedule(selected);
-            var parsedSchedule = new List<List<string>>();
-            
-            var days = schedule.Split(new string[] { "DaySep" }, StringSplitOptions.None);
-            foreach (string day in days)
-            {
-                var commands = day.Split(new string[] { "ProgSep" }, StringSplitOptions.RemoveEmptyEntries);
-                var parsedDay = new List<string>();
-                foreach (string command in commands)
-                {
-                    
-                    parsedDay.Add(command);
-                }
-                parsedSchedule.Add(parsedDay.ToList());
-            }
-            return parsedSchedule;
-        }
-
-        public void addHeaders(string type, List<string> possibleCommands)
+  
+        private void AddColumns()
         {
             var timeColumn = new DataGridViewTextBoxColumn() { Name = "Time", HeaderText = "Time", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells };
             DataGridViewColumn actionColumn;
-            if (type == "enum")
+
+            if (Type == "enum")
             {
-                actionColumn = new DataGridViewComboBoxColumn() {Name = "Action", HeaderText = "Action", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DataSource = possibleCommands};
+                actionColumn = new DataGridViewComboBoxColumn() {Name = "Action", HeaderText = "Action", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DataSource = getPossibleCommandsForGUI() };
             }
             else
             {
-                actionColumn = new DataGridViewTextBoxColumn() { Name = "Action", HeaderText = "Action", AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader };
+                actionColumn = new DataGridViewTextBoxColumn() {Name = "Action", HeaderText = "Action", AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader };
             }
+
+
             dataGridView2.Columns.AddRange(new DataGridViewColumn[] { timeColumn, actionColumn });
-            var days = new string[] { "Mo", "tu", "We", "Th", "Fr", "Sa", "Su" };
-            foreach (string day in days)
+            
+            for (int i = 1; i < 8; i++)
             {
-                dataGridView2.Columns.Add(new DataGridViewCheckBoxColumn() { Name = day, HeaderText = day, AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader });
+                var dayofname = CultureInfo.InvariantCulture.DateTimeFormat.ShortestDayNames[i % 7];
+                dataGridView2.Columns.Add(new DataGridViewCheckBoxColumn() {
+                    Name = dayofname,
+                    HeaderText = dayofname,
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader });
             }
         }
 
@@ -130,6 +59,70 @@ namespace Visu_dataviewer
             MessageBox.Show(e.Exception.Message);
         }
 
+        private List<string> getPossibleCommandsForGUI()
+        {
+            var commandsForGui = new List<string>();
+            if (PossibleCommands == null) return null;
+            foreach (var command in PossibleCommands)
+            {
+                if (command == "") continue;
+                commandsForGui.Add(command);
+            }
+            return commandsForGui;
+        }
 
+        private void LoadFormElements()
+        {
+            var list_0_23 = Enumerable.Range(0, 24).Select(n => new string('0', 2 - n.ToString().Length) + n.ToString()).ToList(); list_0_23.AddRange(new List<string> { "**" });
+            var list_0_59 = Enumerable.Range(0, 60).Select(n => new string('0', 2 - n.ToString().Length) + n.ToString()).ToList(); list_0_59.AddRange(new List<string> { "**" });
+            var list_0_99 = Enumerable.Range(0, 100).Select(n => new string('0', 2 - n.ToString().Length) + n.ToString()).ToList(); list_0_99.AddRange(new List<string> { "**" });
+            comboBox1.DataSource = list_0_23;
+            comboBox2.DataSource = comboBox3.DataSource = list_0_59;
+            comboBox4.DataSource = list_0_99;
+
+            numericUpDown1.Enabled = Type != "enum";
+            comboBox5.Enabled = Type == "enum";
+            if (comboBox5.Enabled) comboBox5.DataSource = getPossibleCommandsForGUI();
+
+        }
+        private void ScheduleReaderWriter_Load(object sender, EventArgs e)
+        {
+            LoadFormElements();
+            foreach (var command in Actions)
+            {
+                if (command == "") continue;
+                var whichDay = new List<bool>();
+                foreach (var day in Schedule)
+                {
+                    whichDay.Add(day.Contains(command));
+                }
+                var time = command.Split(new string[] { " = " }, StringSplitOptions.None)[0];
+                var val = command.Split(new string[] { " = " }, StringSplitOptions.None)[1];
+                var row = new dynamic[] {
+                    time, PossibleCommands!=null ? PossibleCommands[int.Parse(val)] : val.ToString(),
+                    whichDay[0], whichDay[1], whichDay[2], whichDay[3], whichDay[4], whichDay[5], whichDay[6]};
+                dataGridView2.Rows.Add(row);
+            } 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var val = comboBox5.Enabled == true ? comboBox5.Text : numericUpDown1.Value.ToString();
+            var time = comboBox1.Text + ":" + comboBox2.Text + ":" + comboBox3.Text + ":" + comboBox4.Text;
+            var whichDay = new List<bool> {checkBox1.Checked, checkBox2.Checked, checkBox3.Checked, checkBox4.Checked, checkBox5.Checked, checkBox6.Checked, checkBox7.Checked };
+            var row = new dynamic[] {
+                    time, PossibleCommands!=null ? PossibleCommands[int.Parse(val)] : val.ToString(),
+                    whichDay[0], whichDay[1], whichDay[2], whichDay[3], whichDay[4], whichDay[5], whichDay[6]};
+            dataGridView2.Rows.Add(row);
+            dataGridView2.Sort(dataGridView2.Columns["Time"], System.ComponentModel.ListSortDirection.Ascending);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (dataGridView2.SelectedCells.Count>0)
+            {
+                dataGridView2.Rows.RemoveAt(dataGridView2.SelectedCells[0].RowIndex);
+            }
+        }
     }
 }

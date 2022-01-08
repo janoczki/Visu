@@ -1,4 +1,4 @@
-﻿namespace Visu_dataviewer
+﻿namespace Visu_dataviewer.Forms
 {
     partial class DataViewer
     {
@@ -36,7 +36,7 @@
             this.bezárásToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UItimer = new System.Windows.Forms.Timer(this.components);
             this.covSubscriptionTimer = new System.Windows.Forms.Timer(this.components);
-            this.listView1 = new Visu_dataviewer.DoubleBufferedListView();
+            this.listView1 = new Visu_dataviewer.Forms.DoubleBufferedListView();
             this.menu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -82,7 +82,6 @@
             // 
             // UItimer
             // 
-            this.UItimer.Interval = 200;
             this.UItimer.Tick += new System.EventHandler(this.UITimer_Tick);
             // 
             // covSubscriptionTimer

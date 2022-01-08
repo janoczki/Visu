@@ -10,22 +10,22 @@ namespace Visu_dataviewer
 {
     public static class DatapointDefinition
     {
-        public static string[] header;
-        public static string[] content;
-        public static List<string> error = new List<string>();
-        public enum columns
+        public static string[] Header;
+        public static string[] Content;
+        public static List<string> Error = new List<string>();
+        public enum Columns
         {
-            ID, datapointName, datapointDescription, datapointDatatype, datapointSave, datapointCOV, deviceIP, deviceInstance, objectType, objectInstance,
-            txt00, txt01, txt02, txt03, txt04, txt05, txt06, txt07, txt08, txt09, txt10, txt11, txt12, txt13, txt14, txt15,
-            value
+            Id, DatapointName, DatapointDescription, DatapointDatatype, DatapointSave, DatapointCov, DeviceIp, DeviceInstance, ObjectType, ObjectInstance,
+            Txt00, Txt01, Txt02, Txt03, Txt04, Txt05, Txt06, Txt07, Txt08, Txt09, Txt10, Txt11, Txt12, Txt13, Txt14, Txt15,
+            Value
         }
 
-        public static bool isTableUniquenessCorrect(string[] content)
+        public static bool IsTableUniquenessCorrect(string[] content)
         {
-            var columnsToCheck = new List<int> { (int)columns.ID, (int)columns.datapointName };
+            var columnsToCheck = new List<int> { (int)Columns.Id, (int)Columns.DatapointName };
             foreach (int columnIndex in columnsToCheck)
             {
-                if (!isColumnUnique(content, columnIndex))
+                if (!IsColumnUnique(content, columnIndex))
                 {
                     return false;
                 }
@@ -33,7 +33,7 @@ namespace Visu_dataviewer
             return true;
         }
 
-        public static bool isColumnUnique(string[] content, int index)
+        public static bool IsColumnUnique(string[] content, int index)
         {
             var propertyList = new List<string>();
             foreach (string row in content)
@@ -45,30 +45,30 @@ namespace Visu_dataviewer
                 }
                 else
                 {
-                    error.Add("Datapoint name and/or ID isn't unique near line " + Array.IndexOf(content, row) + 1);
+                    Error.Add("Datapoint name and/or ID isn't unique near line " + Array.IndexOf(content, row) + 1);
                     return false;
                 }
             }
             return true;
         }
 
-        public static bool isTableTypeCorrect(string[] content)
+        public static bool IsTableTypeCorrect(string[] content)
         {
             foreach (string row in content)
             {
-                if (!isDatapointTypeCorrect(row))
+                if (!IsDatapointTypeCorrect(row))
                 {
-                    error.Add("Datapoint type incorrect near line " + Array.IndexOf(content, row) + 1);
+                    Error.Add("Datapoint type incorrect near line " + Array.IndexOf(content, row) + 1);
                     return false;
                 }
             }
             return true;
         }
 
-        public static bool isDatapointTypeCorrect(string row)
+        public static bool IsDatapointTypeCorrect(string row)
         {
-            var objectType = row.Split(';')[(int)columns.objectType];
-            var datapointDatatype = row.Split(';')[(int)columns.datapointDatatype];
+            var objectType = row.Split(';')[(int)Columns.ObjectType];
+            var datapointDatatype = row.Split(';')[(int)Columns.DatapointDatatype];
             switch (datapointDatatype)
             {
                 case "binary":
@@ -84,26 +84,26 @@ namespace Visu_dataviewer
             return true;
         }
 
-        public static bool isTableStateTextCorrect(string[] content)
+        public static bool IsTableStateTextCorrect(string[] content)
         {
             foreach (string row in content)
             {
-                if (!isDatapointStateTextCorrect(row))
+                if (!IsDatapointStateTextCorrect(row))
                 {
-                    error.Add("StateText incorrect near line " + Array.IndexOf(content, row) + 1);
+                    Error.Add("StateText incorrect near line " + Array.IndexOf(content, row) + 1);
                     return false;
                 }
             }
             return true;
         }
 
-        public static bool isDatapointStateTextCorrect(string row)
+        public static bool IsDatapointStateTextCorrect(string row)
         {
-            var objectType = row.Split(';')[(int)columns.objectType];
+            var objectType = row.Split(';')[(int)Columns.ObjectType];
 
             if (objectType != "AI" && objectType != "AO" && objectType != "AV" && objectType != "PIV" && objectType != "SC")
             {
-                var stateTexts = string.Join("", new ArraySegment<string>(row.Split(';'), (int)columns.txt00, row.Split(';').Length - (int)columns.txt00));
+                var stateTexts = string.Join("", new ArraySegment<string>(row.Split(';'), (int)Columns.Txt00, row.Split(';').Length - (int)Columns.Txt00));
                 if (stateTexts == "")
                 {
                     return false;
@@ -112,33 +112,33 @@ namespace Visu_dataviewer
             return true;
         }
 
-        public static void readfile()
+        public static void Readfile()
         {
             try
             {
-                var file = File.ReadAllLines(global.path + "\\datapoints.bacnetip", Encoding.Default).ToArray();
-                content = file.Skip(1).ToArray();
+                var file = File.ReadAllLines(global.Path + "\\datapoints.bacnetip", Encoding.Default).ToArray();
+                Content = file.Skip(1).ToArray();
                 var head = file[0] + ";Value";
-                header = head.Split(';');
+                Header = head.Split(';');
             }
             catch (FileNotFoundException)
             {
-                content = null;
-                header = null;
+                Content = null;
+                Header = null;
                 MessageBox.Show("The file defining Bacnet IP objects doesn't exist.");
             }
         }
 
-        public static string[] getTable()
+        public static string[] GetTable()
         {
             try
             {
-                readfile();
-                if (content != null & isTableUniquenessCorrect(content) & isTableTypeCorrect(content) & isTableStateTextCorrect(content))
+                Readfile();
+                if (Content != null & IsTableUniquenessCorrect(Content) & IsTableTypeCorrect(Content) & IsTableStateTextCorrect(Content))
                 {
-                    return content;
+                    return Content;
                 }
-                throw new ArgumentException(string.Join(Environment.NewLine, error));
+                throw new ArgumentException(string.Join(Environment.NewLine, Error));
             }
 
             catch (Exception ex)

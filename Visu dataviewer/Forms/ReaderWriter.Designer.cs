@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
-namespace Visu_dataviewer
+namespace Visu_dataviewer.Forms
 {
     partial class ReaderWriter
     {

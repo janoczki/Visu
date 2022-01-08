@@ -11,6 +11,7 @@ namespace Visu_dataviewer
 {
     public static class Log
     {
+        public static bool inProgress;
         static List<string> logMessages;
 
         static Log()
@@ -18,18 +19,19 @@ namespace Visu_dataviewer
             logMessages = new List<string>();
             Timer logWriterTimer = new Timer();
             logWriterTimer.Elapsed += new ElapsedEventHandler(writeLogFile);
-            logWriterTimer.Interval = 50;
+            logWriterTimer.Interval = 500;
             logWriterTimer.Enabled = true;
         }
 
         public static void Append(string message)
         {
+            inProgress = true;
             logMessages.Add(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss.fff") + ": " + message);
         }
 
         public static void writeLogFile(object source, ElapsedEventArgs e)
         {
-            var path = Path.Combine(@"c:\Visu\Logs\", global.now + ".txt");
+            var path = Path.Combine(@"c:\Visu\Logs\", global.Now + ".txt");
             var len = logMessages.Count;
             
             if (len > 0)
@@ -37,6 +39,7 @@ namespace Visu_dataviewer
                 var listToWrite = logMessages.GetRange(0, len);
                 File.AppendAllLines(path, listToWrite);
                 logMessages.RemoveRange(0, len);
+                inProgress = false;
             }
         }
     }

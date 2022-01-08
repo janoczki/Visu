@@ -10,40 +10,32 @@ namespace Visu_dataviewer
     public static class Sql
     {
 
-        public static SqlConnectionStringBuilder builder;
-        public static SqlConnection connection;
-        public static List<List<string>> dataTransfer;
+        public static SqlConnectionStringBuilder Builder = new SqlConnectionStringBuilder();
+        public static SqlConnection Connection = new SqlConnection();
+        public static List<List<string>> DataTransfer = new List<List<string>>();
         static Sql()
         {
-            dataTransfer = new List<List<string>>();
-            builder = new SqlConnectionStringBuilder();
-            connection = new SqlConnection();
-            //builder.ConnectionString = "server=(local);user id=ab;" +
-            //"password= a!Pass113;initial catalog=AdventureWorks";
-            builder.InitialCatalog = "database";
-            builder.DataSource = "ANDRASGEP\\SQLEXPRESS";
-            builder.UserID = "sa";
-            builder.Password = "Sauter12345";
-            var dataTransferTimer = new Timer();
-            dataTransferTimer.Interval = 2000;
-            dataTransferTimer.Tick += new EventHandler(dataTransferTimer_Tick);
-            dataTransferTimer.Enabled = true;
+            Builder.InitialCatalog = "database";
+            Builder.DataSource = "ANDRASGEP\\SQLEXPRESS";
+            Builder.UserID = "sa";
+            Builder.Password = "Sauter12345";
+            var dataTransferTimer = new Timer {Interval = 2000, Enabled = true};
+            dataTransferTimer.Tick += dataTransferTimer_Tick;
         }
 
-        public static void connect()
+        public static void Connect()
         {
-            connection.ConnectionString = builder.ConnectionString;
-            connection.Open();
+            Connection.ConnectionString = Builder.ConnectionString;
+            Connection.Open();
         }
 
-        public static void addToDataTransferList(List<string> data)
+        public static void AddToDataTransferList(List<string> data)
         {
-            dataTransfer.Add(data);
+            DataTransfer.Add(data);
         }
 
-        public static void writeList(List<List<string>> list,int quantity)
+        public static void WriteList(List<List<string>> list,int quantity)
         {
-            
             var allDataRow = "";
             for (int i = 0; i < quantity; i++)
             {
@@ -53,54 +45,19 @@ namespace Visu_dataviewer
                 dataRow = "('" + dataRow + "')" + separator; 
                 allDataRow += dataRow;
             }
-
             allDataRow += ";";
 
-            string queryString =
-                "INSERT INTO [database].[dbo].[table] ([Datapoint name], [Datapoint value], Timestamp) VALUES " + allDataRow;
-
-            SqlCommand command = new SqlCommand(queryString, connection);
+            var queryString = "INSERT INTO [database].[dbo].[table] ([Datapoint name], [Datapoint value], Timestamp) VALUES " + allDataRow;
+            var command = new SqlCommand(queryString, Connection);
             command.ExecuteNonQuery();
-        }
-
-        public static void write(string name, string value, string timestamp)
-        {
-            timestamp = timestamp.Replace('.', '-');
-            timestamp = timestamp.Replace("- "," ");
-            string queryString =
-                "INSERT INTO [database].[dbo].[table] ([Datapoint name], [Datapoint value], Timestamp) VALUES('" + name + "', '" + value + "', '" + timestamp + "'); ";
-            SqlCommand command = new SqlCommand(queryString, connection);
-            command.ExecuteNonQuery();
-        }
-
-        public static string read()
-        {
-            string queryString = "SELECT * FROM [database].[dbo].[table]";
-            SqlCommand command = new SqlCommand(queryString, connection);
-            SqlDataReader reader = command.ExecuteReader();
-            try
-            {
-                while (reader.Read())
-                {
-                    MessageBox.Show(reader[0].ToString());
-                }
-            }
-            finally
-            {
-                reader.Close();
-            }
-            return "";
         }
 
         private static void dataTransferTimer_Tick(Object myObject, EventArgs myEventArgs)
         {
-            var count = dataTransfer.Count;
-            if (count > 0)
-            {
-                Sql.writeList(dataTransfer, count);
-                dataTransfer.RemoveRange(0, count);
-            }
+            var count = DataTransfer.Count;
+            if (count <= 0) return;
+            WriteList(DataTransfer, count);
+            DataTransfer.RemoveRange(0, count);
         }
-
     }
 }

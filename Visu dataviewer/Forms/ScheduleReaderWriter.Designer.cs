@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace Visu_dataviewer
+namespace Visu_dataviewer.Forms
 {
     partial class ScheduleReaderWriter
     {
@@ -158,6 +158,7 @@ namespace Visu_dataviewer
             this.button1.TabIndex = 10;
             this.button1.Text = "Add";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // button2
             // 
@@ -167,6 +168,7 @@ namespace Visu_dataviewer
             this.button2.TabIndex = 11;
             this.button2.Text = "Remove";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // groupBox1
             // 
@@ -335,6 +337,7 @@ namespace Visu_dataviewer
             this.Name = "ScheduleReaderWriter";
             this.Text = "ScheduleReaderWriter";
             this.TopMost = true;
+            this.Load += new System.EventHandler(this.ScheduleReaderWriter_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);

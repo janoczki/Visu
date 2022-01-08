@@ -4,29 +4,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using Visu_dataviewer.BacnetObjects;
 namespace Visu_dataviewer.Workers
 {
     class Subscriber
     {
         public static void Work(object sender, DoWorkEventArgs e)
         {
-            var table = Datapoints.table;
+            Log.Append("subscription started");
+            var table = Datapoints.Table;
             foreach (List<string> column in table)
             {
-                var bacnetDevice = Bac.getBacnetDevice(column[(int)DatapointDefinition.columns.deviceIP], 1);
-                var bacnetObject = Bac.getBacnetObject(column[(int)DatapointDefinition.columns.objectType], Convert.ToUInt16(column[(int)DatapointDefinition.columns.objectInstance]));
-                var cov = bool.Parse(column[(int)DatapointDefinition.columns.datapointCOV]);
+                var bacnetDevice = Bac.GetBacnetDevice(column[(int)DatapointDefinition.Columns.DeviceIp], 1);
+                var bacnetObject = Bac.GetBacnetObject(column[(int)DatapointDefinition.Columns.ObjectType], Convert.ToUInt16(column[(int)DatapointDefinition.Columns.ObjectInstance]));
+                var cov = bool.Parse(column[(int)DatapointDefinition.Columns.DatapointCov]);
 
-                if (cov)
-                {
-                    Bac.subscribe(bacnetDevice, bacnetObject);
-                }
+                if (!cov) continue;
+                var obj = new NormalObject(bacnetDevice, bacnetObject);
+                obj.Subscribe();
             }
         }
 
-        public static void Complete(object sender, RunWorkerCompletedEventArgs e)
+        public static void Completed(object sender, RunWorkerCompletedEventArgs e)
         {
-            Log.Append("subscribe complete");
+            Log.Append("subscription complete");
         }
     }
 }
