@@ -92,6 +92,7 @@
       <DependentUpon>ReaderWriter.cs</DependentUpon>
     </Compile>
     <Compile Include="Log.cs" />
+    <Compile Include="MessageService.cs" />
     <Compile Include="Workers\Reader.cs" />
     <Compile Include="Workers\Subscriber.cs" />
     <Compile Include="_Program.cs" />

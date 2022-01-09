@@ -107,16 +107,17 @@ namespace Visu_dataviewer.Forms
 
         private static bool OpenScheduleReaderWriter(ListViewItem selected)
         {
-            var bacnetObject = new BacnetObjects.ScheduleObject(
+            var schedule = new BacnetObjects.ScheduleObject(
                 Bac.GetBacnetDevice(selected.SubItems[(int)DatapointDefinition.Columns.DeviceIp].Text.ToString(), 1),
                 Bac.GetBacnetObject(selected.SubItems[(int)DatapointDefinition.Columns.ObjectType].Text.ToString(), 
                 uint.Parse(selected.SubItems[(int)DatapointDefinition.Columns.ObjectInstance].Text.ToString())));
-            var schedule = bacnetObject.Read();
-            var actions = bacnetObject.CollectActions();
-            var possibleCommands = bacnetObject.CollectPossibleCommands(selected);
+            var datatype = selected.SubItems[(int)DatapointDefinition.Columns.DatapointDatatype].Text.ToString();
+            var readedSchedule = schedule.Read();
+            var actions = schedule.CollectActions();
+            var possibleCommands = schedule.CollectPossibleCommands(selected);
             var actionType = selected.SubItems[(int)DatapointDefinition.Columns.Txt01].Text == "" ? "value" : "enum";
             var srw = Application.OpenForms["ScheduleReaderWriter"] as ScheduleReaderWriter ?? 
-                new ScheduleReaderWriter(selected,schedule, actions, possibleCommands,actionType);
+                new ScheduleReaderWriter(selected, readedSchedule, actions, possibleCommands,actionType, datatype);
             srw.Show();
             return true;
         }

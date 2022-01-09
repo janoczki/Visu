@@ -283,8 +283,12 @@ namespace Visu_dataviewer.Forms
             // 
             // numericUpDown1
             // 
-            this.numericUpDown1.DecimalPlaces = 1;
             this.numericUpDown1.Location = new System.Drawing.Point(129, 30);
+            this.numericUpDown1.Minimum = new decimal(new int[] {
+            979930616,
+            79,
+            0,
+            -2147483648});
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(96, 20);
             this.numericUpDown1.TabIndex = 17;
