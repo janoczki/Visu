@@ -55,6 +55,22 @@ namespace Visu_dataviewer.Forms
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
+            this.button3 = new System.Windows.Forms.Button();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.objCovLabel = new System.Windows.Forms.Label();
+            this.objInstLabel = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.objTypeLabel = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.devNetworkLabel = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.devInstLabel = new System.Windows.Forms.Label();
+            this.devIPLabel = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -62,6 +78,9 @@ namespace Visu_dataviewer.Forms
             this.groupBox3.SuspendLayout();
             this.groupBox5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
+            this.groupBox6.SuspendLayout();
+            this.groupBox7.SuspendLayout();
+            this.groupBox8.SuspendLayout();
             this.SuspendLayout();
             // 
             // checkBox1
@@ -152,7 +171,7 @@ namespace Visu_dataviewer.Forms
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(270, 126);
+            this.button1.Location = new System.Drawing.Point(12, 277);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 10;
@@ -162,7 +181,7 @@ namespace Visu_dataviewer.Forms
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(270, 155);
+            this.button2.Location = new System.Drawing.Point(93, 277);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 11;
@@ -177,10 +196,10 @@ namespace Visu_dataviewer.Forms
             this.groupBox1.Controls.Add(this.groupBox3);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(252, 271);
+            this.groupBox1.Size = new System.Drawing.Size(252, 259);
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Time";
+            this.groupBox1.Text = "Schedule command";
             // 
             // groupBox2
             // 
@@ -194,7 +213,7 @@ namespace Visu_dataviewer.Forms
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Location = new System.Drawing.Point(6, 19);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(240, 89);
+            this.groupBox2.Size = new System.Drawing.Size(240, 76);
             this.groupBox2.TabIndex = 14;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Time";
@@ -266,7 +285,7 @@ namespace Visu_dataviewer.Forms
             // 
             this.groupBox4.Controls.Add(this.comboBox5);
             this.groupBox4.Controls.Add(this.numericUpDown1);
-            this.groupBox4.Location = new System.Drawing.Point(6, 200);
+            this.groupBox4.Location = new System.Drawing.Point(6, 188);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(240, 65);
             this.groupBox4.TabIndex = 16;
@@ -302,7 +321,7 @@ namespace Visu_dataviewer.Forms
             this.groupBox3.Controls.Add(this.checkBox5);
             this.groupBox3.Controls.Add(this.checkBox6);
             this.groupBox3.Controls.Add(this.checkBox7);
-            this.groupBox3.Location = new System.Drawing.Point(6, 114);
+            this.groupBox3.Location = new System.Drawing.Point(6, 104);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(240, 74);
             this.groupBox3.TabIndex = 15;
@@ -312,9 +331,9 @@ namespace Visu_dataviewer.Forms
             // groupBox5
             // 
             this.groupBox5.Controls.Add(this.dataGridView2);
-            this.groupBox5.Location = new System.Drawing.Point(351, 12);
+            this.groupBox5.Location = new System.Drawing.Point(12, 306);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(497, 271);
+            this.groupBox5.Size = new System.Drawing.Size(450, 271);
             this.groupBox5.TabIndex = 14;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Schedule list";
@@ -325,15 +344,182 @@ namespace Visu_dataviewer.Forms
             this.dataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView2.Location = new System.Drawing.Point(6, 16);
             this.dataGridView2.Name = "dataGridView2";
-            this.dataGridView2.Size = new System.Drawing.Size(485, 249);
+            this.dataGridView2.Size = new System.Drawing.Size(440, 249);
             this.dataGridView2.TabIndex = 1;
             this.dataGridView2.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView2_DataError);
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(383, 583);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 15;
+            this.button3.Text = "Send+close";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.groupBox7);
+            this.groupBox6.Controls.Add(this.groupBox8);
+            this.groupBox6.Location = new System.Drawing.Point(270, 12);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(192, 259);
+            this.groupBox6.TabIndex = 20;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Bacnet";
+            // 
+            // groupBox7
+            // 
+            this.groupBox7.Controls.Add(this.objCovLabel);
+            this.groupBox7.Controls.Add(this.objInstLabel);
+            this.groupBox7.Controls.Add(this.label5);
+            this.groupBox7.Controls.Add(this.objTypeLabel);
+            this.groupBox7.Controls.Add(this.label9);
+            this.groupBox7.Controls.Add(this.label10);
+            this.groupBox7.Location = new System.Drawing.Point(6, 140);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(182, 115);
+            this.groupBox7.TabIndex = 19;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Object";
+            // 
+            // objCovLabel
+            // 
+            this.objCovLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.objCovLabel.Location = new System.Drawing.Point(67, 81);
+            this.objCovLabel.Name = "objCovLabel";
+            this.objCovLabel.Size = new System.Drawing.Size(100, 20);
+            this.objCovLabel.TabIndex = 24;
+            this.objCovLabel.Text = "Name";
+            this.objCovLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // objInstLabel
+            // 
+            this.objInstLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.objInstLabel.Location = new System.Drawing.Point(67, 55);
+            this.objInstLabel.Name = "objInstLabel";
+            this.objInstLabel.Size = new System.Drawing.Size(100, 20);
+            this.objInstLabel.TabIndex = 23;
+            this.objInstLabel.Text = "Name";
+            this.objInstLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(16, 85);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(27, 13);
+            this.label5.TabIndex = 20;
+            this.label5.Text = "CoV";
+            // 
+            // objTypeLabel
+            // 
+            this.objTypeLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.objTypeLabel.Location = new System.Drawing.Point(67, 29);
+            this.objTypeLabel.Name = "objTypeLabel";
+            this.objTypeLabel.Size = new System.Drawing.Size(100, 20);
+            this.objTypeLabel.TabIndex = 22;
+            this.objTypeLabel.Text = "Name";
+            this.objTypeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(16, 60);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(48, 13);
+            this.label9.TabIndex = 17;
+            this.label9.Text = "Instance";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(16, 33);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(31, 13);
+            this.label10.TabIndex = 14;
+            this.label10.Text = "Type";
+            // 
+            // groupBox8
+            // 
+            this.groupBox8.Controls.Add(this.devNetworkLabel);
+            this.groupBox8.Controls.Add(this.label12);
+            this.groupBox8.Controls.Add(this.devInstLabel);
+            this.groupBox8.Controls.Add(this.devIPLabel);
+            this.groupBox8.Controls.Add(this.label6);
+            this.groupBox8.Controls.Add(this.label7);
+            this.groupBox8.Location = new System.Drawing.Point(6, 19);
+            this.groupBox8.Name = "groupBox8";
+            this.groupBox8.Size = new System.Drawing.Size(182, 115);
+            this.groupBox8.TabIndex = 18;
+            this.groupBox8.TabStop = false;
+            this.groupBox8.Text = "Device";
+            // 
+            // devNetworkLabel
+            // 
+            this.devNetworkLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.devNetworkLabel.Location = new System.Drawing.Point(67, 29);
+            this.devNetworkLabel.Name = "devNetworkLabel";
+            this.devNetworkLabel.Size = new System.Drawing.Size(100, 20);
+            this.devNetworkLabel.TabIndex = 23;
+            this.devNetworkLabel.Text = "Name";
+            this.devNetworkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(16, 33);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(47, 13);
+            this.label12.TabIndex = 22;
+            this.label12.Text = "Network";
+            // 
+            // devInstLabel
+            // 
+            this.devInstLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.devInstLabel.Location = new System.Drawing.Point(67, 82);
+            this.devInstLabel.Name = "devInstLabel";
+            this.devInstLabel.Size = new System.Drawing.Size(100, 20);
+            this.devInstLabel.TabIndex = 21;
+            this.devInstLabel.Text = "Name";
+            this.devInstLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // devIPLabel
+            // 
+            this.devIPLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.devIPLabel.Location = new System.Drawing.Point(67, 56);
+            this.devIPLabel.Name = "devIPLabel";
+            this.devIPLabel.Size = new System.Drawing.Size(100, 20);
+            this.devIPLabel.TabIndex = 20;
+            this.devIPLabel.Text = "Name";
+            this.devIPLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(16, 86);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(48, 13);
+            this.label6.TabIndex = 3;
+            this.label6.Text = "Instance";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(16, 60);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(41, 13);
+            this.label7.TabIndex = 1;
+            this.label7.Text = "IP addr";
             // 
             // ScheduleReaderWriter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1002, 303);
+            this.ClientSize = new System.Drawing.Size(472, 610);
+            this.Controls.Add(this.groupBox6);
+            this.Controls.Add(this.button3);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button2);
@@ -350,6 +536,11 @@ namespace Visu_dataviewer.Forms
             this.groupBox3.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox7.PerformLayout();
+            this.groupBox8.ResumeLayout(false);
+            this.groupBox8.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -380,6 +571,22 @@ namespace Visu_dataviewer.Forms
         private System.Windows.Forms.ComboBox comboBox5;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.GroupBox groupBox5;
-        private DataGridView dataGridView2;
+        public DataGridView dataGridView2;
+        private Button button3;
+        private GroupBox groupBox6;
+        private GroupBox groupBox7;
+        public Label objCovLabel;
+        public Label objInstLabel;
+        private Label label5;
+        public Label objTypeLabel;
+        private Label label9;
+        private Label label10;
+        private GroupBox groupBox8;
+        public Label devNetworkLabel;
+        private Label label12;
+        public Label devInstLabel;
+        public Label devIPLabel;
+        private Label label6;
+        private Label label7;
     }
 }

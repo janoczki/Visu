@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Windows.Forms;
 using System.ComponentModel;
-
+using System.IO.BACnet;
 namespace Visu_dataviewer.Forms
 {
     public partial class DataViewer : Form
@@ -107,17 +107,16 @@ namespace Visu_dataviewer.Forms
 
         private static bool OpenScheduleReaderWriter(ListViewItem selected)
         {
-            var schedule = new BacnetObjects.ScheduleObject(
-                Bac.GetBacnetDevice(selected.SubItems[(int)DatapointDefinition.Columns.DeviceIp].Text.ToString(), 1),
-                Bac.GetBacnetObject(selected.SubItems[(int)DatapointDefinition.Columns.ObjectType].Text.ToString(), 
-                uint.Parse(selected.SubItems[(int)DatapointDefinition.Columns.ObjectInstance].Text.ToString())));
-            var datatype = selected.SubItems[(int)DatapointDefinition.Columns.DatapointDatatype].Text.ToString();
-            var readedSchedule = schedule.Read();
-            var actions = schedule.CollectActions();
-            var possibleCommands = schedule.CollectPossibleCommands(selected);
-            var actionType = selected.SubItems[(int)DatapointDefinition.Columns.Txt01].Text == "" ? "value" : "enum";
-            var srw = Application.OpenForms["ScheduleReaderWriter"] as ScheduleReaderWriter ?? 
-                new ScheduleReaderWriter(selected, readedSchedule, actions, possibleCommands,actionType, datatype);
+            var dp = new Datapoint(selected);
+            var actionType = dp.BacnetObjectDataFormat;
+            var allCommand = dp.StateTexts;
+            var bacnetDevice = new Device(dp.NetworkNumber, dp.DeviceIP, dp.DeviceInstance).GetDevice();
+            var bacnetID = new BacnetID(bacnetDevice, dp.BacnetObjectType, dp.BacnetObjectInstance).GetBacnetObject();
+            var bacnetDatapoint = new ScheduleObject(bacnetDevice, bacnetID);
+            var schedule = bacnetDatapoint.GetSchedule();
+            var scheduleCommands = bacnetDatapoint.GetScheduleCommands(schedule);
+            var srw = Application.OpenForms["ScheduleReaderWriter"] as ScheduleReaderWriter ??
+                new ScheduleReaderWriter(selected, schedule, scheduleCommands, allCommand, actionType, actionType);
             srw.Show();
             return true;
         }

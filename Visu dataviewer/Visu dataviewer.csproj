@@ -66,10 +66,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bac.cs" />
-    <Compile Include="BacnetObjects\NormalObject.cs" />
-    <Compile Include="BacnetObjects\ScheduleObject.cs" />
+    <Compile Include="BacnetID.cs" />
+    <Compile Include="NormalObject.cs" />
+    <Compile Include="ScheduleObject.cs" />
+    <Compile Include="ScheduleObjecOLDt.cs" />
+    <Compile Include="Datapoint.cs" />
     <Compile Include="DatapointDefinition.cs" />
     <Compile Include="Datapoints.cs" />
+    <Compile Include="Device.cs" />
     <Compile Include="Forms\DataViewer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -93,6 +97,9 @@
     </Compile>
     <Compile Include="Log.cs" />
     <Compile Include="MessageService.cs" />
+    <Compile Include="Schedule\Schedule.cs" />
+    <Compile Include="Schedule\ScheduleAction.cs" />
+    <Compile Include="SerializerService.cs" />
     <Compile Include="Workers\Reader.cs" />
     <Compile Include="Workers\Subscriber.cs" />
     <Compile Include="_Program.cs" />

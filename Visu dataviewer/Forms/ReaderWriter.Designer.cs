@@ -66,6 +66,8 @@ namespace Visu_dataviewer.Forms
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.readedValueLabel = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
+            this.devNetworkLabel = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
             this.groupBox5.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -83,7 +85,7 @@ namespace Visu_dataviewer.Forms
             this.groupBox5.Controls.Add(this.groupBox2);
             this.groupBox5.Location = new System.Drawing.Point(210, 12);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(192, 234);
+            this.groupBox5.Size = new System.Drawing.Size(192, 259);
             this.groupBox5.TabIndex = 19;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Bacnet";
@@ -96,7 +98,7 @@ namespace Visu_dataviewer.Forms
             this.groupBox3.Controls.Add(this.objTypeLabel);
             this.groupBox3.Controls.Add(this.label9);
             this.groupBox3.Controls.Add(this.label10);
-            this.groupBox3.Location = new System.Drawing.Point(6, 115);
+            this.groupBox3.Location = new System.Drawing.Point(6, 140);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(182, 115);
             this.groupBox3.TabIndex = 19;
@@ -162,13 +164,15 @@ namespace Visu_dataviewer.Forms
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.devNetworkLabel);
+            this.groupBox2.Controls.Add(this.label12);
             this.groupBox2.Controls.Add(this.devInstLabel);
             this.groupBox2.Controls.Add(this.devIPLabel);
             this.groupBox2.Controls.Add(this.label6);
             this.groupBox2.Controls.Add(this.label7);
             this.groupBox2.Location = new System.Drawing.Point(6, 19);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(182, 90);
+            this.groupBox2.Size = new System.Drawing.Size(182, 115);
             this.groupBox2.TabIndex = 18;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Device";
@@ -176,7 +180,7 @@ namespace Visu_dataviewer.Forms
             // devInstLabel
             // 
             this.devInstLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.devInstLabel.Location = new System.Drawing.Point(67, 55);
+            this.devInstLabel.Location = new System.Drawing.Point(67, 82);
             this.devInstLabel.Name = "devInstLabel";
             this.devInstLabel.Size = new System.Drawing.Size(100, 20);
             this.devInstLabel.TabIndex = 21;
@@ -186,7 +190,7 @@ namespace Visu_dataviewer.Forms
             // devIPLabel
             // 
             this.devIPLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.devIPLabel.Location = new System.Drawing.Point(67, 29);
+            this.devIPLabel.Location = new System.Drawing.Point(67, 56);
             this.devIPLabel.Name = "devIPLabel";
             this.devIPLabel.Size = new System.Drawing.Size(100, 20);
             this.devIPLabel.TabIndex = 20;
@@ -196,7 +200,7 @@ namespace Visu_dataviewer.Forms
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(16, 59);
+            this.label6.Location = new System.Drawing.Point(16, 86);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(48, 13);
             this.label6.TabIndex = 3;
@@ -205,7 +209,7 @@ namespace Visu_dataviewer.Forms
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(16, 33);
+            this.label7.Location = new System.Drawing.Point(16, 60);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(41, 13);
             this.label7.TabIndex = 1;
@@ -326,7 +330,7 @@ namespace Visu_dataviewer.Forms
             // 
             // closeButton
             // 
-            this.closeButton.Location = new System.Drawing.Point(327, 433);
+            this.closeButton.Location = new System.Drawing.Point(327, 458);
             this.closeButton.Name = "closeButton";
             this.closeButton.Size = new System.Drawing.Size(75, 23);
             this.closeButton.TabIndex = 22;
@@ -343,7 +347,7 @@ namespace Visu_dataviewer.Forms
             // 
             this.groupBox7.Controls.Add(this.groupBox8);
             this.groupBox7.Controls.Add(this.groupBox9);
-            this.groupBox7.Location = new System.Drawing.Point(12, 252);
+            this.groupBox7.Location = new System.Drawing.Point(12, 277);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(390, 154);
             this.groupBox7.TabIndex = 23;
@@ -431,11 +435,30 @@ namespace Visu_dataviewer.Forms
             this.label17.TabIndex = 1;
             this.label17.Text = "Value";
             // 
+            // devNetworkLabel
+            // 
+            this.devNetworkLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.devNetworkLabel.Location = new System.Drawing.Point(67, 29);
+            this.devNetworkLabel.Name = "devNetworkLabel";
+            this.devNetworkLabel.Size = new System.Drawing.Size(100, 20);
+            this.devNetworkLabel.TabIndex = 23;
+            this.devNetworkLabel.Text = "Name";
+            this.devNetworkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(16, 33);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(47, 13);
+            this.label12.TabIndex = 22;
+            this.label12.Text = "Network";
+            // 
             // ReaderWriter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(414, 468);
+            this.ClientSize = new System.Drawing.Size(414, 493);
             this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.closeButton);
             this.Controls.Add(this.groupBox6);
@@ -500,5 +523,7 @@ namespace Visu_dataviewer.Forms
         public System.Windows.Forms.Label readedValueLabel;
         private System.Windows.Forms.Label label17;
         private Button resetButton;
+        public Label devNetworkLabel;
+        private Label label12;
     }
 }

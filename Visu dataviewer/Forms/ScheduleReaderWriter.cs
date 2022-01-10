@@ -135,6 +135,7 @@ namespace Visu_dataviewer.Forms
             }
             if (comboBox5.Enabled) comboBox5.DataSource = commandsForGui;
         }
+
         private void InitElements()
         {
             FillTimeComboBoxes();
@@ -219,6 +220,15 @@ namespace Visu_dataviewer.Forms
             {
                 dataGridView2.Rows.RemoveAt(dataGridView2.SelectedCells[0].RowIndex);
             }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            //////var schedule = new ScheduleObject(
+            //////    Bac.GetBacnetDevice(Selected.SubItems[(int)DatapointDefinition.Columns.DeviceIp].Text.ToString(), 1),
+            //////    Bac.GetBacnetObject(Selected.SubItems[(int)DatapointDefinition.Columns.ObjectType].Text.ToString(),
+            //////    uint.Parse(Selected.SubItems[(int)DatapointDefinition.Columns.ObjectInstance].Text.ToString())));
+            //////schedule.Write();
         }
     }
 }
